@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       org:
-        description: 'Which "Revanced" do you want to patch?'
+        description: 'Which patch bundle do you want to build?'
         required: true
         default: "Morphe"
         type: choice
