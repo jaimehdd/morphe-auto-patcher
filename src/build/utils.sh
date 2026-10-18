@@ -638,8 +638,8 @@ get_apk() {
 		slug_ver=$(echo "$version_href" | grep -oP '\d+(-\d+)+' | tail -1)
 		[[ -z "$slug_ver" ]] && slug_ver=$(echo "$version_href" | grep -oP '\d+(-\d+)*' | tail -1)
 		local target_ver
-		target_ver=$(echo "$version" | tr '.' '-' | grep -oP '\d+(-\d+)+' | tail -1)
-		[[ -z "$target_ver" ]] && target_ver=$(echo "$version" | tr '.' '-' | grep -oP '\d+(-\d+)*' | tail -1)
+		target_ver=$(echo "$version" | tr '.' '-' | tr -d '+' | grep -oP '\d+(-\d+)+' | tail -1)
+		[[ -z "$target_ver" ]] && target_ver=$(echo "$version" | tr '.' '-' | tr -d '+' | grep -oP '\d+(-\d+)*' | tail -1)
 		if [[ -n "$slug_ver" && -n "$target_ver" ]]; then
 			version_href="${version_href/$slug_ver/$target_ver}"
 		fi
@@ -661,8 +661,8 @@ get_apk() {
 			slug_ver=$(echo "$version_href" | grep -oP '\d+(-\d+)+' | tail -1)
 			[[ -z "$slug_ver" ]] && slug_ver=$(echo "$version_href" | grep -oP '\d+(-\d+)*' | tail -1)
 			local target_ver
-			target_ver=$(echo "$version" | tr '.' '-' | grep -oP '\d+(-\d+)+' | tail -1)
-			[[ -z "$target_ver" ]] && target_ver=$(echo "$version" | tr '.' '-' | grep -oP '\d+(-\d+)*' | tail -1)
+			target_ver=$(echo "$version" | tr '.' '-' | tr -d '+' | grep -oP '\d+(-\d+)+' | tail -1)
+			[[ -z "$target_ver" ]] && target_ver=$(echo "$version" | tr '.' '-' | tr -d '+' | grep -oP '\d+(-\d+)*' | tail -1)
 			if [[ -n "$slug_ver" && -n "$target_ver" ]]; then
 				version_href="${version_href/$slug_ver/$target_ver}"
 			fi
