@@ -72,6 +72,10 @@ jobs:
         id: check-hushmessenger
         if: steps.check-gh.outputs.internet_error == '0'
         run: bash src/etc/ci.sh SysAdminDoc/HushMessenger latest messenger.*hushmessenger.*apk
+      - name: Check new patch hxreborn
+        id: check-hxreborn
+        if: steps.check-gh.outputs.internet_error == '0'
+        run: bash src/etc/ci.sh hxreborn/morphe-patches latest readera.*hxreborn.*apk
       - name: Combine check outputs
         id: combine-community
         if: steps.check-gh.outputs.internet_error == '0'
@@ -83,6 +87,7 @@ jobs:
           [ "${{ steps.check-hushfeed.outputs.new_patch }}" = "1" ] && targets+=("tiktok")
           [ "${{ steps.check-akash-sriram.outputs.new_patch }}" = "1" ] && targets+=("photos")
           [ "${{ steps.check-binarymend.outputs.new_patch }}" = "1" ] && targets+=("moonreader")
+          [ "${{ steps.check-hxreborn.outputs.new_patch }}" = "1" ] && targets+=("readera")
           [ "${{ steps.check-hoo-dles.outputs.new_patch }}" = "1" ] && targets+=("fotmob")
           [ "${{ steps.check-hooman.outputs.new_patch }}" = "1" ] && targets+=("poweramp")
           [ "${{ steps.check-dh6k.outputs.new_patch }}" = "1" ] && targets+=("brave")

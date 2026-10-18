@@ -159,6 +159,10 @@
     "com.maxmpz.audioplayer": {
       "list_url": "https://www.apkmirror.com/uploads/?appcategory=poweramp",
       "example_url": "https://www.apkmirror.com/apk/max-mp/poweramp/poweramp-music-player-build-1024-bundle-play-release/"
+    },
+    "org.readera": {
+      "list_url": "https://www.apkmirror.com/uploads/?appcategory=readera",
+      "example_url": "https://www.apkmirror.com/apk/readera-llc/readera-book-reader-pdf-epub/readera-book-reader-pdf-epub-26-09-29-2320-release/"
     }
   },
   "uptodown": {
@@ -200,6 +204,9 @@
     },
     "com.zhiliaoapp.musically": {
       "url": "https://tiktok.en.uptodown.com/android"
+    },
+    "org.readera": {
+      "url": "https://readera.en.uptodown.com/android"
     }
   }
 }

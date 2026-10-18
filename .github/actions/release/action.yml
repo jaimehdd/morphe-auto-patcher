@@ -77,6 +77,10 @@ runs:
               echo "* **Hushfeed TikTok Patches**: [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
+            hxreborn)
+              echo "* **hxreborn Patches**: [hxreborn/morphe-patches](https://github.com/hxreborn/morphe-patches/releases)"
+              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
+              ;;
             *)
               echo "* **Morphe Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
@@ -99,6 +103,7 @@ runs:
           echo "| **hoo-dles** | [hoo-dles/morphe-patches](https://github.com/hoo-dles/morphe-patches/releases) | FotMob |"
           echo "| **Hooman** | [arandomhooman/hoomans-morphe-patches](https://github.com/arandomhooman/hoomans-morphe-patches/releases) | Poweramp |"
           echo "| **Hushfeed** | [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases) | TikTok |"
+          echo "| **hxreborn** | [hxreborn/morphe-patches](https://github.com/hxreborn/morphe-patches/releases) | ReadEra |"
           echo "| **Rushi** | [rushiranpise/morphe-patches](https://github.com/rushiranpise/morphe-patches/releases) | AdGuard, Windy, Komoot, Strava |"
           echo "| **Morphe Desktop** | [MorpheApp/morphe-desktop](https://github.com/MorpheApp/morphe-desktop/releases) | CLI & Patcher Engine |"
           echo ""

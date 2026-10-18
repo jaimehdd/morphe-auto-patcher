@@ -162,6 +162,21 @@ moonreader() {
 	community_patch "moonreader-arm64-v8a" "binarymend"
 }
 
+readera() {
+	APP_NAME="readera"
+	VARIANT="hxreborn"
+	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
+
+	community_dl "morphe-patches" "hxreborn"
+	get_patches_key "readera"
+	get_apk "org.readera" "readera-arm64-v8a" "bundle"
+
+	release_exists && return 0
+
+	community_patch "readera-arm64-v8a" "hxreborn"
+}
+
 # ==============================================================================
 # Group 3: Sports, Fitness & Navigation
 # ==============================================================================
@@ -312,6 +327,9 @@ case "$1" in
 		;;
 	moonreader)
 		moonreader
+		;;
+	readera|readera-hxreborn)
+		readera
 		;;
 	fotmob)
 		fotmob
