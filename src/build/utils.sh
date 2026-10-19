@@ -471,6 +471,57 @@ detect_version() {
 	        export target_version_code
 	      fi
 	    fi
+
+	    # Fallback: if target_version_code is still empty, extract version codes from .mpp Target class constant pools
+	    if [[ -z "$target_version_code" && -z "$target_version_codes" ]]; then
+	      local auto_vcodes
+	      auto_vcodes=$(python3 -c '
+import zipfile, struct, glob
+codes = set()
+for mpp in glob.glob("*.mpp"):
+    try:
+        with zipfile.ZipFile(mpp) as z:
+            for name in z.namelist():
+                if ("Target" in name or "Compat" in name) and name.endswith(".class"):
+                    data = z.read(name)
+                    if data[:4] == b"\xca\xfe\xba\xbe":
+                        cp_count = struct.unpack(">H", data[8:10])[0]
+                        idx = 10
+                        i = 1
+                        while i < cp_count:
+                            tag = data[idx]
+                            idx += 1
+                            if tag == 1:
+                                l = struct.unpack(">H", data[idx:idx+2])[0]
+                                idx += 2 + l
+                            elif tag == 3:
+                                v = struct.unpack(">i", data[idx:idx+4])[0]
+                                idx += 4
+                                if 100000000 <= v < 2000000000:
+                                    codes.add(v)
+                            elif tag in (4, 9, 10, 11, 12, 17, 18):
+                                idx += 4
+                            elif tag in (5, 6):
+                                idx += 8
+                                i += 1
+                            elif tag in (7, 8, 16, 19, 20):
+                                idx += 2
+                            elif tag == 15:
+                                idx += 3
+                            else:
+                                break
+                            i += 1
+    except Exception:
+        pass
+if codes:
+    print(" ".join(str(c) for c in sorted(codes)))
+' 2>/dev/null)
+	      if [[ -n "$auto_vcodes" ]]; then
+	        target_version_codes="$auto_vcodes"
+	        export target_version_codes
+	        green_log "[+] Extracted supported version codes from bundle: $target_version_codes"
+	      fi
+	    fi
 	  fi
 	fi
 }
@@ -628,6 +679,7 @@ get_apk() {
 	green_log "[+] Detected version: ${version:-latest} [$pkg_name]"
 	local vcode_log=""
 	[[ -n "$target_version_code" ]] && vcode_log=" vcode=$target_version_code"
+	[[ -n "$target_version_codes" ]] && vcode_log=" vcodes=[$target_version_codes]"
 	green_log "[+] Downloading $apk_name (type=$pkg_type arch=${arch:-any} dpi=$dpi$vcode_log)"
 
 	local version_href=""
@@ -744,7 +796,17 @@ get_apk() {
 				candidate_rows=$(echo "$rows" | grep -iP "apkm-badge[^>]*>\s*$try_type\s*<")
 				[[ -n "$try_arch" ]] && candidate_rows=$(echo "$candidate_rows" | grep -i "$try_arch")
 				[[ -n "$try_minver" ]] && candidate_rows=$(echo "$candidate_rows" | grep -i "$try_minver")
-				if [[ -n "$target_version_code" ]]; then
+				if [[ -n "$target_version_codes" ]]; then
+					local vcode_pattern
+					vcode_pattern=$(echo "$target_version_codes" | tr ' ' '|')
+					local vcode_rows
+					vcode_rows=$(echo "$candidate_rows" | grep -E "$vcode_pattern")
+					if [[ -n "$vcode_rows" ]]; then
+						candidate_rows="$vcode_rows"
+					else
+						yellow_log "[!] None of target version codes ($target_version_codes) found in candidates, trying without version code filter"
+					fi
+				elif [[ -n "$target_version_code" ]]; then
 					local vcode_rows
 					vcode_rows=$(echo "$candidate_rows" | grep -F "$target_version_code")
 					if [[ -n "$vcode_rows" ]]; then
@@ -851,6 +913,7 @@ get_apk() {
 		fi
 	fi
 	unset target_version_code
+	unset target_version_codes
 }
 
 get_apkpure() {
@@ -1253,6 +1316,8 @@ patch() {
 		unset communityExcludePatches
 		unset communityIncludePatches
 		unset APP_VERSION
+		unset target_version_code
+		unset target_version_codes
 	else
 		red_log "[-] Not found $1.apk"
 		exit 1
