@@ -1,20 +1,29 @@
 #!/bin/bash
 
+LAST_FETCHED_REPO=""
+CACHED_RELEASES_JSON=""
+
 # Check new patch:
 get_date() {
 	local json
-	if command -v wget >/dev/null 2>&1; then
-		local auth_header=()
-		if [ -n "$GITHUB_TOKEN" ]; then
-			auth_header=(--header="Authorization: Bearer $GITHUB_TOKEN")
-		fi
-		json=$(wget -qO- "${auth_header[@]}" "https://api.github.com/repos/$1/releases")
+	if [ "$1" = "$LAST_FETCHED_REPO" ] && [ -n "$CACHED_RELEASES_JSON" ]; then
+		json="$CACHED_RELEASES_JSON"
 	else
-		local auth_header=()
-		if [ -n "$GITHUB_TOKEN" ]; then
-			auth_header=(-H "Authorization: Bearer $GITHUB_TOKEN")
+		if command -v wget >/dev/null 2>&1; then
+			local auth_header=()
+			if [ -n "$GITHUB_TOKEN" ]; then
+				auth_header=(--header="Authorization: Bearer $GITHUB_TOKEN")
+			fi
+			json=$(wget -qO- "${auth_header[@]}" "https://api.github.com/repos/$1/releases?per_page=100")
+		else
+			local auth_header=()
+			if [ -n "$GITHUB_TOKEN" ]; then
+				auth_header=(-H "Authorization: Bearer $GITHUB_TOKEN")
+			fi
+			json=$(curl -s "${auth_header[@]}" "https://api.github.com/repos/$1/releases?per_page=100")
 		fi
-		json=$(curl -s "${auth_header[@]}" "https://api.github.com/repos/$1/releases")
+		LAST_FETCHED_REPO="$1"
+		CACHED_RELEASES_JSON="$json"
 	fi
 	case "$2" in
 		latest)
@@ -51,7 +60,7 @@ checker(){
 	date1=$(get_date "$repo" "$tag_type" "(\.jar|\.rvp|\.mpp|\.apk)$")
 	if [ -z "$date1" ] || [ "$date1" = "null" ]; then
 		echo -e "\e[31mFailed to fetch upstream release date for $repo\e[0m"
-		echo "new_patch=0" >> "$GITHUB_OUTPUT"
+		[ -n "$GITHUB_OUTPUT" ] && echo "new_patch=0" >> "$GITHUB_OUTPUT"
 		return 0
 	fi
 	date1_sec=$(date_to_sec "$date1")
@@ -74,10 +83,10 @@ checker(){
 	done
 
 	if [ "$needs_build" -eq 1 ]; then
-		echo "new_patch=1" >> "$GITHUB_OUTPUT"
+		[ -n "$GITHUB_OUTPUT" ] && echo "new_patch=1" >> "$GITHUB_OUTPUT"
 		echo -e "\e[32mNew patch, building...\e[0m"
 	else
-		echo "new_patch=0" >> "$GITHUB_OUTPUT"
+		[ -n "$GITHUB_OUTPUT" ] && echo "new_patch=0" >> "$GITHUB_OUTPUT"
 		echo -e "\e[32mOld patch, not build.\e[0m"
 	fi
 }
