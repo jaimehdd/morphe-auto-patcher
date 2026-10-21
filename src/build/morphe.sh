@@ -30,6 +30,25 @@ youtube() {
 	split_arch "youtube" "morphe"
 }
 
+youtube-stock() {
+	APP_NAME="youtube"
+	VARIANT="stock"
+	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
+
+	morphe_dl
+	get_patches_key "youtube-stock"
+	prefer_version="$youtube_experimental_support"
+	get_apk "com.google.android.youtube" "youtube" "apk"
+
+	release_exists && return 0
+
+	patch "youtube" "stock" "stock"
+
+	# Remove unused architectures
+	split_arch "youtube" "stock"
+}
+
 reddit() {
 	APP_NAME="reddit"
 	VARIANT="morphe"
@@ -65,14 +84,36 @@ youtube-music() {
 	patch "youtube-music-arm64-v8a" "morphe" "morphe"
 }
 
+youtube-music-stock() {
+	APP_NAME="youtube-music"
+	VARIANT="stock"
+	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
+
+	morphe_dl
+	get_patches_key "youtube-music-stock"
+	prefer_version="$youtube_music_experimental_support"
+	get_apk "com.google.android.apps.youtube.music" "youtube-music-arm64-v8a" "apk" "arm64-v8a"
+
+	release_exists && return 0
+
+	patch "youtube-music-arm64-v8a" "stock" "stock"
+}
+
 case "$1" in
 	youtube|youtube-morphe)
 		youtube
+		;;
+	youtube-stock)
+		youtube-stock
 		;;
 	reddit|reddit-morphe)
 		reddit
 		;;
 	youtube-music|youtube-music-morphe)
 		youtube-music
+		;;
+	youtube-music-stock)
+		youtube-music-stock
 		;;
 esac

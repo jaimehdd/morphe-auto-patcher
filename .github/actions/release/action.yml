@@ -29,7 +29,7 @@ runs:
           echo ""
           echo "### 🔗 Upstream Changelogs & Sources :point_down:"
           case "${VARIANT}" in
-            morphe)
+            morphe|stock)
               echo "* **Morphe Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               echo "* **Morphe Desktop / Patcher**: [MorpheApp/morphe-desktop](https://github.com/MorpheApp/morphe-desktop/releases)"
               ;;
