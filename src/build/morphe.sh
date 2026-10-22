@@ -8,7 +8,7 @@ morphe_dl() {
 	local patches_tag="latest"
 	[ "$use_beta" = true ] && patches_tag="prerelease"
 	dl_gh "morphe-patches" "MorpheApp" "$patches_tag"
-	dl_gh "morphe-desktop" "MorpheApp" "prerelease"
+	dl_gh "morphe-desktop" "MorpheApp" "$patches_tag"
 }
 
 youtube() {
