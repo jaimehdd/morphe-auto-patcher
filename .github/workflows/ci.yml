@@ -27,7 +27,7 @@ jobs:
       - name: Check new patch Morphe
         id: check-morphe
         if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh MorpheApp/morphe-patches latest "^youtube-arm64-v8a-morphe\.apk$" "^youtube-music-arm64-v8a-morphe\.apk$" "^reddit-arm64-v8a-morphe\.apk$" "^youtube-arm64-v8a-stock\.apk$" "^youtube-music-arm64-v8a-stock\.apk$"
+        run: bash src/etc/ci.sh MorpheApp/morphe-patches latest "^youtube-arm64-v8a-morphe\.apk$" "^youtube-music-arm64-v8a-morphe\.apk$" "^reddit-arm64-v8a-morphe\.apk$"
       - name: Check new patch HushGram
         id: check-hushgram
         if: steps.check-gh.outputs.internet_error == '0'
