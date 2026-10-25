@@ -84,6 +84,10 @@ jobs:
         id: check-hushtelegram
         if: steps.check-gh.outputs.internet_error == '0'
         run: bash src/etc/ci.sh SysAdminDoc/HushTelegram latest telegram.*hushtelegram.*apk
+      - name: Check new patch shini-cell
+        id: check-shini-cell
+        if: steps.check-gh.outputs.internet_error == '0'
+        run: bash src/etc/ci.sh shini-cell/shini-morphe latest nagramxf.*shini-cell.*apk
       - name: Combine check outputs
         id: combine-community
         if: steps.check-gh.outputs.internet_error == '0'
@@ -93,6 +97,7 @@ jobs:
           [ "${{ steps.check-hushfacebook.outputs.new_patch }}" = "1" ] && targets+=("facebook")
           [ "${{ steps.check-hushmessenger.outputs.new_patch }}" = "1" ] && targets+=("messenger")
           [ "${{ steps.check-hushtelegram.outputs.new_patch }}" = "1" ] && targets+=("telegram")
+          [ "${{ steps.check-shini-cell.outputs.new_patch }}" = "1" ] && targets+=("nagramxf")
           [ "${{ steps.check-hushfeed.outputs.new_patch }}" = "1" ] && targets+=("tiktok")
           [ "${{ steps.check-akash-sriram.outputs.new_patch }}" = "1" ] && targets+=("photos")
           [ "${{ steps.check-binarymend.outputs.new_patch }}" = "1" ] && targets+=("moonreader")

@@ -183,88 +183,6 @@ print("[+] Successfully configured apiId and apiHash in " + options_path)
 		communityExcludePatches+=" -d \"Use registered Telegram API credentials\""
 	fi
 
-	# Suppress launcher context menu shortcut for HushTelegram
-	green_log "[+] Suppressing launcher context menu shortcut in HushTelegram extension"
-	python3 -c '
-import zipfile, struct, hashlib, zlib, os, glob
-
-mpp_files = glob.glob("patches-*.mpp")
-if not mpp_files:
-    exit(0)
-
-mpp_path = mpp_files[0]
-target_entry = "extensions/telegram.mpe"
-
-with zipfile.ZipFile(mpp_path, "r") as z:
-    if target_entry not in z.namelist():
-        exit(0)
-    dex = bytearray(z.read(target_entry))
-
-string_ids_size, string_ids_off = struct.unpack("<II", dex[56:64])
-type_ids_size, type_ids_off = struct.unpack("<II", dex[64:72])
-method_ids_size, method_ids_off = struct.unpack("<II", dex[88:96])
-class_defs_size, class_defs_off = struct.unpack("<II", dex[96:104])
-
-def get_string(idx):
-    off, = struct.unpack("<I", dex[string_ids_off + idx * 4 : string_ids_off + idx * 4 + 4])
-    pos = off; l = 0; shift = 0
-    while True:
-        b = dex[pos]; pos += 1
-        l |= (b & 0x7f) << shift
-        if (b & 0x80) == 0: break
-        shift += 7
-    return dex[pos:pos+l].decode("latin1", "replace")
-
-def get_type(idx):
-    str_idx, = struct.unpack("<I", dex[type_ids_off + idx * 4 : type_ids_off + idx * 4 + 4])
-    return get_string(str_idx)
-
-modified = 0
-for i in range(class_defs_size):
-    c_off = class_defs_off + i * 32
-    class_idx, access_flags, superclass_idx, interfaces_off, source_file_idx, annotations_off, class_data_off, static_values_off = struct.unpack("<IIIIIIII", dex[c_off:c_off+32])
-    if get_type(class_idx) == "Lapp/hushtelegram/extension/telegram/settings/SettingsEntry;":
-        cursor = [class_data_off]
-        def read_uleb128():
-            res = 0; shift = 0
-            while True:
-                b = dex[cursor[0]]; cursor[0] += 1
-                res |= (b & 0x7f) << shift
-                if (b & 0x80) == 0: break
-                shift += 7
-            return res
-        s_fields = read_uleb128(); i_fields = read_uleb128(); d_methods = read_uleb128(); v_methods = read_uleb128()
-        for _ in range(s_fields): read_uleb128(); read_uleb128()
-        for _ in range(i_fields): read_uleb128(); read_uleb128()
-        m_idx = 0
-        for _ in range(d_methods + v_methods):
-            m_diff = read_uleb128(); m_idx += m_diff; m_flags = read_uleb128(); m_code = read_uleb128()
-            m_def = dex[method_ids_off + m_idx * 8 : method_ids_off + m_idx * 8 + 8]
-            _, _, n_idx = struct.unpack("<HHI", m_def)
-            m_name = get_string(n_idx)
-            if m_name in ("publishShortcut", "publishShortcutNow"):
-                insn_start = m_code + 16
-                dex[insn_start] = 0x0e
-                dex[insn_start + 1] = 0x00
-                modified += 1
-
-if modified > 0:
-    new_sig = hashlib.sha1(dex[32:]).digest()
-    dex[12:32] = new_sig
-    new_checksum = zlib.adler32(dex[12:]) & 0xffffffff
-    dex[8:12] = struct.pack("<I", new_checksum)
-
-    temp_zip = mpp_path + ".tmp"
-    with zipfile.ZipFile(mpp_path, "r") as zin, zipfile.ZipFile(temp_zip, "w") as zout:
-        for item in zin.infolist():
-            if item.filename == target_entry:
-                zout.writestr(item, dex)
-            else:
-                zout.writestr(item, zin.read(item.filename))
-    os.replace(temp_zip, mpp_path)
-    print(f"[+] Successfully neutralized {modified} launcher shortcut registration methods")
-'
-
 	community_patch "telegram-arm64-v8a" "hushtelegram"
 
 	if [[ -n "$TELEGRAM_API_ID" && -n "$TELEGRAM_API_HASH" ]]; then
@@ -288,69 +206,6 @@ if not found:
 print("[+] Verification passed: Registered Telegram API credentials confirmed in patched APK.")
 ' "./release/telegram-arm64-v8a-hushtelegram.apk" "$TELEGRAM_API_HASH"
 	fi
-
-	python3 -c '
-import zipfile, struct, sys
-
-apk_path = "./release/telegram-arm64-v8a-hushtelegram.apk"
-verified = False
-
-with zipfile.ZipFile(apk_path) as z:
-    for dex_name in z.namelist():
-        if not dex_name.endswith(".dex"): continue
-        dex = z.read(dex_name)
-        if b"Lapp/hushtelegram/extension/telegram/settings/SettingsEntry;" not in dex: continue
-        string_ids_size, string_ids_off = struct.unpack("<II", dex[56:64])
-        type_ids_size, type_ids_off = struct.unpack("<II", dex[64:72])
-        method_ids_size, method_ids_off = struct.unpack("<II", dex[88:96])
-        class_defs_size, class_defs_off = struct.unpack("<II", dex[96:104])
-
-        def get_string(idx):
-            off, = struct.unpack("<I", dex[string_ids_off + idx * 4 : string_ids_off + idx * 4 + 4])
-            pos = off; l = 0; shift = 0
-            while True:
-                b = dex[pos]; pos += 1
-                l |= (b & 0x7f) << shift
-                if (b & 0x80) == 0: break
-                shift += 7
-            return dex[pos:pos+l].decode("latin1", "replace")
-
-        def get_type(idx):
-            str_idx, = struct.unpack("<I", dex[type_ids_off + idx * 4 : type_ids_off + idx * 4 + 4])
-            return get_string(str_idx)
-
-        for i in range(class_defs_size):
-            c_off = class_defs_off + i * 32
-            class_idx, access_flags, superclass_idx, interfaces_off, source_file_idx, annotations_off, class_data_off, static_values_off = struct.unpack("<IIIIIIII", dex[c_off:c_off+32])
-            if get_type(class_idx) == "Lapp/hushtelegram/extension/telegram/settings/SettingsEntry;":
-                cursor = [class_data_off]
-                def read_uleb128():
-                    res = 0; shift = 0
-                    while True:
-                        b = dex[cursor[0]]; cursor[0] += 1
-                        res |= (b & 0x7f) << shift
-                        if (b & 0x80) == 0: break
-                        shift += 7
-                    return res
-                s_fields = read_uleb128(); i_fields = read_uleb128(); d_methods = read_uleb128(); v_methods = read_uleb128()
-                for _ in range(s_fields): read_uleb128(); read_uleb128()
-                for _ in range(i_fields): read_uleb128(); read_uleb128()
-                m_idx = 0
-                for _ in range(d_methods + v_methods):
-                    m_diff = read_uleb128(); m_idx += m_diff; m_flags = read_uleb128(); m_code = read_uleb128()
-                    m_def = dex[method_ids_off + m_idx * 8 : method_ids_off + m_idx * 8 + 8]
-                    _, _, n_idx = struct.unpack("<HHI", m_def)
-                    m_name = get_string(n_idx)
-                    if m_name == "publishShortcut":
-                        insn = dex[m_code + 16 : m_code + 18]
-                        if insn == b"\x0e\x00":
-                            verified = True
-
-if verified:
-    print("[+] Verification passed: Launcher shortcut publish method verified neutralized (return-void) in APK.")
-else:
-    print("[!] Warning: Launcher shortcut publish method was not neutralized in final APK.")
-'
 }
 telegram-hushtelegram() { telegram; }
 
@@ -558,6 +413,61 @@ linkedin() {
 	community_patch "linkedin-arm64-v8a" "michii"
 }
 
+nagramxf() {
+	APP_NAME="nagramxf"
+	VARIANT="shini-cell"
+	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
+
+	community_dl "shini-morphe" "shini-cell"
+	get_patches_key "nagramxf"
+
+	local nagram_api_url="https://api.github.com/repos/Keeperorowner/NagramXF/releases/latest"
+	local auth_header=()
+	[ -n "$GITHUB_TOKEN" ] && auth_header=(-H "Authorization: Bearer $GITHUB_TOKEN")
+	local release_json
+	if command -v curl >/dev/null 2>&1; then
+		release_json=$(curl -sSL "${auth_header[@]}" "$nagram_api_url")
+	else
+		local auth_wget=()
+		[ -n "$GITHUB_TOKEN" ] && auth_wget=(--header="Authorization: Bearer $GITHUB_TOKEN")
+		release_json=$(wget -qO- "${auth_wget[@]}" "$nagram_api_url")
+	fi
+
+	local apk_url
+	apk_url=$(echo "$release_json" | jq -r '.assets[] | select(.name | test("normal-arm64-v8a\\.apk$")) | .browser_download_url' | head -n1)
+	local asset_name
+	asset_name=$(echo "$release_json" | jq -r '.assets[] | select(.name | test("normal-arm64-v8a\\.apk$")) | .name' | head -n1)
+
+	if [[ -z "$apk_url" || "$apk_url" == "null" ]]; then
+		red_log "[-] Could not find NagramXF normal-arm64-v8a.apk in latest release"
+		exit 1
+	fi
+
+	if [[ "$asset_name" =~ NagramXF-v([^.]+-[^.]+)\.([0-9]+)\. ]]; then
+		version="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+	elif [[ "$asset_name" =~ NagramXF-v([^-]+-[^\.]+)\. ]]; then
+		version="${BASH_REMATCH[1]}"
+	else
+		version=$(echo "$release_json" | jq -r '.tag_name')
+	fi
+	export version
+	green_log "[+] Target NagramXF version: $version ($asset_name)"
+
+	release_exists && return 0
+
+	mkdir -p ./download
+	green_log "[+] Downloading $asset_name from Keeperorowner/NagramXF"
+	if command -v curl >/dev/null 2>&1; then
+		curl -sSL -o "./download/nagramxf-arm64-v8a.apk" "$apk_url"
+	else
+		wget -q -O "./download/nagramxf-arm64-v8a.apk" "$apk_url"
+	fi
+
+	community_patch "nagramxf-arm64-v8a" "shini-cell"
+}
+nagramxf-shini-cell() { nagramxf; }
+
 # ==============================================================================
 # Dispatcher
 # ==============================================================================
@@ -613,5 +523,8 @@ case "$1" in
 		;;
 	telegram|telegram-hushtelegram)
 		telegram
+		;;
+	nagramxf|nagramxf-shini-cell)
+		nagramxf
 		;;
 esac
