@@ -1229,52 +1229,6 @@ get_apk_chplay() {
 	fi
 }
 
-get_telegram() {
-	local apk_name="${1:-telegram-arm64-v8a}"
-	local pkg_name="org.telegram.messenger.web"
-	local out_file="./download/$apk_name.apk"
-	mkdir -p ./download
-
-	green_log "[+] Downloading Telegram (web direct) from telegram.org"
-	local user_agent="Mozilla/5.0 (Android; Mobile; rv:130.0) Gecko/130.0 Firefox/130.0"
-
-	if ! curl -sSL -H "User-Agent: $user_agent" -o "$out_file" "https://telegram.org/dl/android/apk"; then
-		red_log "[-] Failed to download Telegram APK from telegram.org"
-		return 1
-	fi
-
-	if [[ ! -s "$out_file" ]]; then
-		red_log "[-] Downloaded Telegram file is missing or empty"
-		return 1
-	fi
-
-	green_log "[+] Downloaded $(du -h "$out_file" | cut -f1) from telegram.org"
-
-	detect_version "$pkg_name"
-
-	if [[ -z "$version" ]]; then
-		version=$(python3 -c '
-import zipfile, re
-try:
-    with zipfile.ZipFile("'$out_file'", "r") as z:
-        manifest = z.read("AndroidManifest.xml")
-        for m in re.finditer(b"(?:[\x20-\x7e]\x00){4,}", manifest):
-            s = m.group(0).decode("utf-16le", errors="ignore")
-            if re.match(r"^[0-9]+\.[0-9]+(\.[0-9]+)*$", s):
-                print(s)
-                break
-except Exception:
-    pass
-' 2>/dev/null)
-	fi
-
-	[[ -z "$version" ]] && version="13.1.0"
-	export version
-	export_app_version "$version"
-	green_log "[+] Telegram version: $version"
-	return 0
-}
-
 # Download files from Telegram channel/group
 # Required secret in github setting TDL_BACKUP base64 backup file from https://docs.iyear.me/tdl/more/cli/tdl_backup/
 # You must login your telegram (recommend use clone account) before backup https://docs.iyear.me/tdl/getting-started/quick-start/#login

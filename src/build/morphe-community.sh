@@ -121,12 +121,11 @@ telegram() {
 
 	community_dl "HushTelegram" "SysAdminDoc"
 	get_patches_key "telegram"
-	get_telegram "telegram-arm64-v8a"
+	get_apk "org.telegram.messenger.web" "telegram-arm64-v8a" "apk" "universal"
 
 	release_exists && return 0
 
 	auto_include_community_patches "org.telegram.messenger.web" "telegram"
-	detachPlayStoreUpdates=true
 	community_patch "telegram-arm64-v8a" "hushtelegram"
 }
 telegram-hushtelegram() { telegram; }
