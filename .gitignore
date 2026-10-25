@@ -1,2 +1,14 @@
 .vscode/
 AGENTS.md
+download/
+release/
+*.apk
+*.apkm
+*.xapk
+*.mpp
+*.mpp.disabled
+*.rvp
+*.jar
+pup
+pup.zip
+*-CHANGELOG.txt

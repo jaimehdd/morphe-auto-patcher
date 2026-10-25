@@ -24,30 +24,6 @@ runs:
       with:
         distribution: 'zulu'
         java-version: '21'
-    - name: Start FlareSolverr
-      shell: bash
-      run: |
-        docker run -d --name flaresolverr -p 8191:8191 ghcr.io/flaresolverr/flaresolverr:latest
-        echo "[*] Waiting for FlareSolverr to start..."
-        for i in $(seq 1 30); do
-          if curl -s http://localhost:8191/ > /dev/null 2>&1; then
-            echo "[+] FlareSolverr is ready."
-            break
-          fi
-          sleep 2
-        done
-    - name: Start CloudflareBypassForScraping
-      shell: bash
-      run: |
-        docker run -d --name cloudflarebypass -p 8000:8000 ghcr.io/sarperavci/cloudflarebypassforscraping:latest
-        echo "[*] Waiting for CloudflareBypassForScraping to start..."
-        for i in $(seq 1 30); do
-          if curl -s http://localhost:8000/ > /dev/null 2>&1; then
-            echo "[+] CloudflareBypassForScraping is ready."
-            break
-          fi
-          sleep 2
-        done
     - name: Set up Python
       if: inputs.install_python_deps == 'true'
       uses: actions/setup-python@v7

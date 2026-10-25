@@ -27,7 +27,7 @@ jobs:
       - name: Check new patch Morphe
         id: check-morphe
         if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh MorpheApp/morphe-patches latest "^youtube-arm64-v8a-morphe\.apk$" "^youtube-music-arm64-v8a-morphe\.apk$" "^reddit-arm64-v8a-morphe\.apk$"
+        run: bash src/etc/ci.sh MorpheApp/morphe-patches latest "youtube:^youtube-arm64-v8a-morphe\.apk$" "youtube-music:^youtube-music-arm64-v8a-morphe\.apk$" "reddit:^reddit-arm64-v8a-morphe\.apk$"
       - name: Check new patch HushGram
         id: check-hushgram
         if: steps.check-gh.outputs.internet_error == '0'
@@ -47,7 +47,7 @@ jobs:
       - name: Check new patch Rushi
         id: check-rushi
         if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh rushiranpise/morphe-patches latest "(adguard|strava|windy|komoot).*rushi.*apk"
+        run: bash src/etc/ci.sh rushiranpise/morphe-patches latest "adguard:adguard.*rushi.*apk" "komoot:komoot.*rushi.*apk" "windy:windy.*rushi.*apk"
       - name: Check new patch Akash-Sriram
         id: check-akash-sriram
         if: steps.check-gh.outputs.internet_error == '0'
@@ -103,7 +103,24 @@ jobs:
           [ "${{ steps.check-dh6k.outputs.new_patch }}" = "1" ] && targets+=("brave")
           [ "${{ steps.check-adobo.outputs.new_patch }}" = "1" ] && targets+=("reddit-adobo")
           if [ "${{ steps.check-rushi.outputs.new_patch }}" = "1" ]; then
-            targets+=("adguard" "komoot" "strava" "windy")
+            read -ra rushi_targets <<< "${{ steps.check-rushi.outputs.targets }}"
+            if [ ${#rushi_targets[@]} -gt 0 ]; then
+              targets+=("${rushi_targets[@]}")
+            else
+              targets+=("adguard" "komoot" "windy")
+            fi
+          fi
+
+          if [ "${{ steps.check-morphe.outputs.new_patch }}" = "1" ]; then
+            read -ra m_targets <<< "${{ steps.check-morphe.outputs.targets }}"
+            if [ ${#m_targets[@]} -gt 0 ]; then
+              morphe_json=$(jq -c -n '$ARGS.positional' --args "${m_targets[@]}")
+            else
+              morphe_json='["youtube","reddit","youtube-music"]'
+            fi
+            echo "morphe_targets=$morphe_json" >> $GITHUB_OUTPUT
+          else
+            echo "morphe_targets=[]" >> $GITHUB_OUTPUT
           fi
 
           if [ ${#targets[@]} -gt 0 ]; then
@@ -117,12 +134,12 @@ jobs:
             echo "No new patches detected."
           fi
       - name: Re-run workflow if github connection not stable
-        if: always() && steps.check-morphe.outcome == 'skipped' && env.retry_count < env.max_retries
+        if: always() && steps.check-morphe.outcome == 'skipped'
         uses: actions/github-script@v9
         with:
           script: |
-            const maxRetries = ${{ env.max_retries }};
-            let retryCount = ${{ env.retry_count }};
+            const maxRetries = 3;
+            let retryCount = Number('${{ inputs.retry_count || 1 }}');
             if (retryCount < maxRetries) {
               retryCount += 1;
               await github.rest.actions.createWorkflowDispatch({
@@ -137,10 +154,9 @@ jobs:
             }
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          retry_count: ${{ github.event.inputs.retry_count }}
-          max_retries: 3
     outputs:
       check_morphe: ${{ steps.check-morphe.outputs.new_patch }}
+      morphe_targets: ${{ steps.combine-community.outputs.morphe_targets }}
       check_morphe_community: ${{ steps.combine-community.outputs.new_patch }}
       community_targets: ${{ steps.combine-community.outputs.targets }}
 
@@ -152,6 +168,7 @@ jobs:
     secrets: inherit
     with:
       org: "Morphe"
+      targets: ${{ needs.check.outputs.morphe_targets }}
   Patch-Morphe-Community:
     name: Patch Morphe Community
     needs: check

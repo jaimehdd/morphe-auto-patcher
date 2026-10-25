@@ -113,7 +113,7 @@ runs:
           echo "| **Hushfeed** | [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases) | TikTok |"
           echo "| **hxreborn** | [hxreborn/morphe-patches](https://github.com/hxreborn/morphe-patches/releases) | ReadEra |"
           echo "| **Michii** | [heyymichii/michii-patches](https://github.com/heyymichii/michii-patches/releases) | LinkedIn |"
-          echo "| **Rushi** | [rushiranpise/morphe-patches](https://github.com/rushiranpise/morphe-patches/releases) | AdGuard, Windy, Komoot, Strava |"
+          echo "| **Rushi** | [rushiranpise/morphe-patches](https://github.com/rushiranpise/morphe-patches/releases) | AdGuard, Windy, Komoot |"
           echo "| **Shini** | [shini-cell/shini-morphe](https://github.com/shini-cell/shini-morphe/releases) | Nagram XF |"
           echo "| **Morphe Desktop** | [MorpheApp/morphe-desktop](https://github.com/MorpheApp/morphe-desktop/releases) | CLI & Patcher Engine |"
           echo ""

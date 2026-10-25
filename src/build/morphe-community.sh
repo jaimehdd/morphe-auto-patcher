@@ -13,7 +13,7 @@ fi
 separate_morphe_universal_patches=true
 
 morphe_universal_dl() {
-	dl_gh "morphe-patches" "MorpheApp" "$tag"
+	dl_gh "morphe-patches" "MorpheApp" "$tag" "true"
 	for patches_file in patches-*.mpp; do
 		[ -e "$patches_file" ] || continue
 		mv "$patches_file" "morphe-universal-$patches_file.disabled"
@@ -25,7 +25,7 @@ community_dl() {
 	local org="$2"
 	local custom_tag="${3:-$tag}"
 
-	dl_gh "morphe-desktop" "MorpheApp" "latest"
+	dl_gh "morphe-desktop" "MorpheApp" "$tag" "true"
 	morphe_universal_dl
 	dl_gh "$repo" "$org" "$custom_tag"
 }
@@ -209,21 +209,6 @@ komoot() {
 	release_exists && return 0
 
 	community_patch "komoot-arm64-v8a" "rushi"
-}
-
-strava() {
-	APP_NAME="strava"
-	VARIANT="rushi"
-	# echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	# echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-
-	# community_dl "morphe-patches" "rushiranpise"
-	# get_patches_key "strava"
-	# get_apk_uptodown "com.strava" "strava-arm64-v8a" "bundle"
-
-	# release_exists && return 0
-
-	# community_patch "strava-arm64-v8a" "rushi"
 }
 
 # ==============================================================================
@@ -413,9 +398,6 @@ case "$1" in
 		;;
 	komoot)
 		komoot
-		;;
-	strava)
-		strava
 		;;
 	adguard)
 		adguard

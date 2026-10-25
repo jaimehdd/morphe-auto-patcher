@@ -8,7 +8,7 @@ morphe_dl() {
 	local patches_tag="latest"
 	[ "$use_beta" = true ] && patches_tag="prerelease"
 	dl_gh "morphe-patches" "MorpheApp" "$patches_tag"
-	dl_gh "morphe-desktop" "MorpheApp" "$patches_tag"
+	dl_gh "morphe-desktop" "MorpheApp" "$patches_tag" "true"
 }
 
 youtube() {
@@ -24,10 +24,7 @@ youtube() {
 
 	release_exists && return 0
 
-	patch "youtube" "morphe" "morphe"
-
-	# Remove unused architectures
-	split_arch "youtube" "morphe"
+	patch "youtube" "morphe" "morphe" "arm64-v8a"
 }
 
 reddit() {
@@ -45,7 +42,6 @@ reddit() {
 
 	# Patch Arm64-v8a:
 	split_editor "reddit" "reddit-arm64-v8a" "exclude" "split_config.armeabi_v7a split_config.x86_64 split_config.mdpi split_config.ldpi split_config.hdpi split_config.xhdpi split_config.xxhdpi split_config.tvdpi"
-	get_patches_key "reddit-morphe"
 	patch "reddit-arm64-v8a" "morphe" "morphe"
 }
 

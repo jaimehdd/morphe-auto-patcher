@@ -67,12 +67,12 @@ jobs:
 
           if [ -n "$call_targets" ] && [ "$call_targets" != "[]" ] && [ "$call_targets" != '""' ]; then
             echo "community_targets=$call_targets" >> $GITHUB_OUTPUT
-            echo 'morphe_targets=["youtube","reddit","youtube-music"]' >> $GITHUB_OUTPUT
+            echo "morphe_targets=$call_targets" >> $GITHUB_OUTPUT
           elif [ -n "$dispatch_app" ] && [ "$dispatch_app" != "all" ]; then
             echo "community_targets=[\"$dispatch_app\"]" >> $GITHUB_OUTPUT
             echo "morphe_targets=[\"$dispatch_app\"]" >> $GITHUB_OUTPUT
           else
-            echo 'community_targets=["photos","instagram","messenger","strava","fotmob","windy","moonreader","adguard","komoot","brave","poweramp","tiktok","reddit-adobo","facebook","readera","linkedin","nagramxf"]' >> $GITHUB_OUTPUT
+            echo 'community_targets=["photos","instagram","messenger","fotmob","windy","moonreader","adguard","komoot","brave","poweramp","tiktok","reddit-adobo","facebook","readera","linkedin","nagramxf"]' >> $GITHUB_OUTPUT
             echo 'morphe_targets=["youtube","reddit","youtube-music"]' >> $GITHUB_OUTPUT
           fi
 

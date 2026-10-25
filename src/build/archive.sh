@@ -96,6 +96,7 @@ strava() {
 
 	rushi_dl
 	get_patches_key "strava"
+	get_apk_uptodown "com.strava" "strava-arm64-v8a" "bundle" || \
 	get_apk_chplay "com.strava" "strava-arm64-v8a" "bundle"
 
 	release_exists && return 0

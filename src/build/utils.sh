@@ -1,20 +1,23 @@
 #!/bin/bash
 
-mkdir ./release ./download
+mkdir -p ./release ./download
 
-#Setup pup for download apk files
-wget -q -O ./pup.zip https://github.com/ericchiang/pup/releases/download/v0.4.0/pup_v0.4.0_linux_amd64.zip
-unzip "./pup.zip" -d "./" > /dev/null 2>&1
 pup="./pup"
-#Setup APKEditor for install combine split apks
-wget -q -O ./APKEditor.jar https://github.com/REAndroid/APKEditor/releases/download/V1.4.9/APKEditor-1.4.9.jar
 APKEditor="./APKEditor.jar"
-#Find lastest user_agent
-user_agent=$(wget -qO- https://www.whatismybrowser.com/guides/the-latest-user-agent/firefox | tr '\n' ' ' | sed 's#</tr>#\n#g' | grep 'Firefox (Standard)' | sed -n 's/.*<span class="code">\([^<]*Android[^<]*\)<\/span>.*/\1/p') \
-|| user_agent=
-[ -z "$user_agent" ] && {
-  user_agent='Mozilla/5.0 (Android 16; Mobile; rv:146.0) Gecko/146.0 Firefox/146.0'
-  echo "[-] Can't found lastest user-agent"
+user_agent='Mozilla/5.0 (Android 16; Mobile; rv:146.0) Gecko/146.0 Firefox/146.0'
+
+ensure_pup() {
+	if [[ ! -x "$pup" ]]; then
+		wget -q -O ./pup.zip https://github.com/ericchiang/pup/releases/download/v0.4.0/pup_v0.4.0_linux_amd64.zip
+		unzip -o "./pup.zip" -d "./" > /dev/null 2>&1
+		rm -f ./pup.zip
+	fi
+}
+
+ensure_apkeditor() {
+	if [[ ! -f "$APKEditor" ]]; then
+		wget -q -O "$APKEditor" https://github.com/REAndroid/APKEditor/releases/download/V1.4.9/APKEditor-1.4.9.jar
+	fi
 }
 
 #################################################
@@ -49,7 +52,12 @@ export_app_version() {
 
 set_patch_version_from_asset_name() {
 	local asset_name="$1"
+	local skip_export="${2:-false}"
 	local detected_patch_version=""
+
+	if [[ "$skip_export" == "true" ]]; then
+		return 0
+	fi
 
 	if [[ $asset_name == *.jar ]] && [[ $asset_name == *"revanced-patches"* ]]; then
 		# arsclib jar files: revanced-patches-X.Y.Z.jar
@@ -60,13 +68,15 @@ set_patch_version_from_asset_name() {
 		if [[ $asset_name == *"revanced-patches-"* ]]; then
 			detected_patch_version=${asset_name#"revanced-patches-"}
 		else
-			detected_patch_version=${asset_name#"patches-"}
+			detected_patch_version=${asset_name#*"patches-"}
 		fi
 		detected_patch_version=${detected_patch_version%.rvp}
 	elif [[ $asset_name == *.mpp ]] && [[ $asset_name == *"patches-"* ]]; then
-		# mpp files: patches-X.Y.Z.mpp (Morphe)
-		detected_patch_version=${asset_name#"patches-"}
+		# mpp files: patches-X.Y.Z.mpp or <bundle>-patches-X.Y.Z.mpp
+		detected_patch_version=${asset_name#*"patches-"}
 		detected_patch_version=${detected_patch_version%.mpp}
+	elif [[ $asset_name == *.mpp ]] && [[ $asset_name =~ ([0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?)\.mpp$ ]]; then
+		detected_patch_version="${BASH_REMATCH[1]}"
 	elif [[ $asset_name == *"NexAlloy-"* ]] && [[ $asset_name == *.apk ]]; then
 		# NexAlloy apk assets (e.g. NexAlloy-nonroot-release-v6.0.apk)
 		detected_patch_version=${asset_name#NexAlloy-*-*-}
@@ -77,10 +87,13 @@ set_patch_version_from_asset_name() {
 	if [[ -n "$detected_patch_version" ]]; then
 		patch_version="$detected_patch_version"
 		export patch_version
-		echo "patch_version=$patch_version" >> $GITHUB_ENV
+		[ -n "$GITHUB_ENV" ] && echo "patch_version=$patch_version" >> "$GITHUB_ENV"
 		green_log "Patch version: $patch_version"
 	fi
 }
+
+_RELEASE_EXISTS_TAG=""
+_RELEASE_EXISTS_RESULT=""
 
 release_exists() {
 	local app_version="${APP_VERSION:-$version}"
@@ -102,16 +115,28 @@ release_exists() {
 		return 1
 	fi
 
+	if [[ "$_RELEASE_EXISTS_TAG" == "$release_tag" && -n "$_RELEASE_EXISTS_RESULT" ]]; then
+		return "$_RELEASE_EXISTS_RESULT"
+	fi
+
 	green_log "[+] Checking existing release: $release_tag"
 	local apk_asset_count
-	apk_asset_count=$(gh release view "$release_tag" --repo "$repo" --json assets --jq '[.assets[].name | select(endswith(".apk"))] | length' 2>/dev/null) || return 1
+	if ! apk_asset_count=$(gh release view "$release_tag" --repo "$repo" --json assets --jq '[.assets[].name | select(endswith(".apk"))] | length' 2>/dev/null); then
+		_RELEASE_EXISTS_TAG="$release_tag"
+		_RELEASE_EXISTS_RESULT=1
+		return 1
+	fi
 
 	if [[ "$apk_asset_count" -gt 0 ]]; then
 		green_log "[+] Release already has APK asset(s), skipping patch: $release_tag"
+		_RELEASE_EXISTS_TAG="$release_tag"
+		_RELEASE_EXISTS_RESULT=0
 		return 0
 	fi
 
 	green_log "[+] Release exists without APK assets, patching will continue: $release_tag"
+	_RELEASE_EXISTS_TAG="$release_tag"
+	_RELEASE_EXISTS_RESULT=1
 	return 1
 }
 
@@ -119,7 +144,7 @@ release_exists() {
 
 # Download Github assets requirement:
 dl_gh() {
-  local repo=$1 owner=$2 tag_mode=$3
+  local repo=$1 owner=$2 tag_mode=$3 skip_version=${4:-false}
   local -a auth=()
   if [ -n "$GITHUB_TOKEN" ]; then
     auth=(-H "Authorization: Bearer $GITHUB_TOKEN")
@@ -163,7 +188,7 @@ dl_gh() {
         continue
       fi
       green_log "[+] Downloading $names from $owner"
-      set_patch_version_from_asset_name "$names"
+      set_patch_version_from_asset_name "$names" "$skip_version"
       if command -v curl >/dev/null 2>&1; then
         curl -sSL -o "$names" "$url"
       else
@@ -526,10 +551,53 @@ if codes:
 	fi
 }
 
+_ensure_flaresolverr() {
+	if curl -s http://localhost:8191/ >/dev/null 2>&1; then
+		return 0
+	fi
+	if ! command -v docker >/dev/null 2>&1; then
+		return 1
+	fi
+	green_log "[*] Starting FlareSolverr container on demand..."
+	docker start flaresolverr >/dev/null 2>&1 || \
+		docker run -d --name flaresolverr -p 8191:8191 ghcr.io/flaresolverr/flaresolverr:latest >/dev/null 2>&1 || true
+	for i in $(seq 1 30); do
+		if curl -s http://localhost:8191/ >/dev/null 2>&1; then
+			green_log "[+] FlareSolverr is ready."
+			return 0
+		fi
+		sleep 2
+	done
+	red_log "[-] FlareSolverr failed to start within timeout"
+	return 1
+}
+
+_ensure_cfb() {
+	if curl -s http://localhost:8000/ >/dev/null 2>&1; then
+		return 0
+	fi
+	if ! command -v docker >/dev/null 2>&1; then
+		return 1
+	fi
+	green_log "[*] Starting CloudflareBypassForScraping container on demand..."
+	docker start cloudflarebypass >/dev/null 2>&1 || \
+		docker run -d --name cloudflarebypass -p 8000:8000 ghcr.io/sarperavci/cloudflarebypassforscraping:latest >/dev/null 2>&1 || true
+	for i in $(seq 1 30); do
+		if curl -s http://localhost:8000/ >/dev/null 2>&1; then
+			green_log "[+] CloudflareBypassForScraping is ready."
+			return 0
+		fi
+		sleep 2
+	done
+	red_log "[-] CloudflareBypassForScraping failed to start within timeout"
+	return 1
+}
+
 _fs_get() {
 	local url=$1
 	local max_retries=3
 	local attempt
+	_ensure_flaresolverr || return 1
 	for attempt in $(seq 1 $max_retries); do
 		local response
 		response=$(curl -s -X POST 'http://localhost:8191/v1' \
@@ -555,6 +623,7 @@ _cfb_get() {
 	local url=$1
 	local max_retries=3
 	local attempt
+	_ensure_cfb || return 1
 
 	for attempt in $(seq 1 $max_retries); do
 		local response_file
@@ -622,6 +691,7 @@ get_apkmirror_version_code() {
 
 	# Fallback: if API did not return version code, scrape release page from APKMirror
 	if [[ -z "$version_code" ]]; then
+		ensure_pup
 		local apps_json="./src/build/helper/apps.json"
 		local list_url
 		list_url=$(jq -r --arg pkg "$pkg_name" '.apkmirror[$pkg].list_url // empty' "$apps_json")
@@ -677,6 +747,17 @@ get_apk() {
 	export version
 
 	green_log "[+] Detected version: ${version:-latest} [$pkg_name]"
+	if [[ -n "$version" ]]; then
+		export_app_version "$version"
+		if release_exists; then
+			unset target_version_code
+			unset target_version_codes
+			return 0
+		fi
+	fi
+
+	ensure_pup
+
 	local vcode_log=""
 	[[ -n "$target_version_code" ]] && vcode_log=" vcode=$target_version_code"
 	[[ -n "$target_version_codes" ]] && vcode_log=" vcodes=[$target_version_codes]"
@@ -763,6 +844,11 @@ get_apk() {
 
 	export version
 	export_app_version "$version"
+	if release_exists; then
+		unset target_version_code
+		unset target_version_codes
+		return 0
+	fi
 
 	local type_badge="APK"
 	[[ "$pkg_type" == "bundle" || "$pkg_type" == "bundle_extract" ]] && type_badge="BUNDLE"
@@ -908,6 +994,7 @@ get_apk() {
 		if [[ "$pkg_type" == "bundle_extract" && "$type_badge" == "BUNDLE" ]]; then
 			unzip "./download/$base_apk" -d "./download/$(basename "$base_apk" .apkm)" > /dev/null 2>&1
 		else
+			ensure_apkeditor
 			green_log "[+] Merge splits apk to standalone apk"
 			java -jar $APKEditor m -i "./download/$apk_name.apkm" -o "./download/$apk_name.apk" > /dev/null 2>&1
 		fi
@@ -934,6 +1021,13 @@ get_apkpure() {
 	unset prefer_version
 	export version
 
+	if [[ -n "$version" ]]; then
+		export_app_version "$version"
+		release_exists && return 0
+	fi
+
+	ensure_pup
+
 	if [[ "$pkg_type" == "bundle" ]] || [[ "$pkg_type" == "bundle_extract" ]]; then
 		local base_apk="$apk_name.xapk"
 	else
@@ -957,6 +1051,7 @@ get_apkpure() {
 	fi
 	green_log "[+] Version: $version"
 	export_app_version "$version"
+	release_exists && return 0
 
 	local download_url
 	download_url=$(echo "$html" | $pup 'a#download_link attr{href}' | head -1)
@@ -986,6 +1081,7 @@ get_apkpure() {
 	fi
 	if [[ "$pkg_type" == "bundle" ]]; then
 		if unzip -l "./download/$base_apk" 2>/dev/null | grep -q '\.apk$'; then
+			ensure_apkeditor
 			green_log "[+] Merge splits apk to standalone apk"
 			if ! java -jar $APKEditor m -i "./download/$apk_name.xapk" -o "./download/$apk_name.apk" > /dev/null 2>&1; then
 				red_log "[-] Failed to merge $apk_name.xapk to standalone apk"
@@ -1020,6 +1116,11 @@ get_apk_uptodown() {
 	version=$(printf '%s\n' "$version" "$prefer_version" | sort -V | tail -n1)
 	unset prefer_version
 	export version
+
+	if [[ -n "$version" ]]; then
+		export_app_version "$version"
+		release_exists && return 0
+	fi
 
 	green_log "[+] Downloading $apk_name from Uptodown [$pkg_name] (type=$pkg_type target_ver=${version:-latest})"
 
@@ -1111,6 +1212,7 @@ get_apk_uptodown() {
 			version=$(echo "$html" | grep -oP 'class="version">\K[^<]+' | head -1)
 		fi
 		export_app_version "$version"
+		release_exists && return 0
 
 		local download_url
 		download_url=$(echo "$html" | grep -oP 'https://dw\.uptodown\.com/dwn/[^"'\''\s<>]+' | head -1)
@@ -1147,6 +1249,7 @@ get_apk_uptodown() {
 			if [[ "$pkg_type" == "bundle_extract" ]]; then
 				unzip "./download/$base_apk" -d "./download/$apk_name" > /dev/null 2>&1
 			else
+				ensure_apkeditor
 				green_log "[+] Merge splits apk to standalone apk"
 				java -jar $APKEditor m -i "./download/$base_apk" -o "./download/$apk_name.apk.merged" > /dev/null 2>&1
 				if [[ -f "./download/$apk_name.apk.merged" ]]; then
@@ -1220,6 +1323,7 @@ get_apk_chplay() {
 			green_log "[+] Extracting split APKs"
 			unzip "./download/$apk_name.apk" -d "./download/$apk_name" > /dev/null 2>&1
 		else
+			ensure_apkeditor
 			green_log "[+] Merging split APKs to standalone apk"
 			java -jar $APKEditor m -i "./download/$apk_name.apk" -o "./download/$apk_name.apk.merged" > /dev/null 2>&1
 			if [[ -f "./download/$apk_name.apk.merged" ]]; then
@@ -1240,12 +1344,20 @@ patch() {
 			red_log "[-] morphe-desktop-*.jar not found"
 			exit 1
 		fi
-		unset CI GITHUB_ACTION GITHUB_ACTIONS GITHUB_ACTOR GITHUB_ENV GITHUB_EVENT_NAME GITHUB_EVENT_PATH GITHUB_HEAD_REF GITHUB_JOB GITHUB_REF GITHUB_REPOSITORY GITHUB_RUN_ID GITHUB_RUN_NUMBER GITHUB_SHA GITHUB_WORKFLOW GITHUB_WORKSPACE RUN_ID RUN_NUMBER
-		if ! eval java -jar morphe-desktop-*.jar patch $(morphe_patches_args "-p") --options-file ./src/options/$2.json --out=./release/$1-$2.apk$excludePatches$includePatches --keystore=./src/morphe.keystore --force --continue-on-error ./download/$1.apk; then
+		local strip_arg=""
+		local out_name="$1-$2.apk"
+		if [[ -n "$4" ]]; then
+			strip_arg="--striplibs $4"
+			out_name="$1-$4-$2.apk"
+		fi
+		if ! (
+			unset CI GITHUB_ACTION GITHUB_ACTIONS GITHUB_ACTOR GITHUB_ENV GITHUB_EVENT_NAME GITHUB_EVENT_PATH GITHUB_HEAD_REF GITHUB_JOB GITHUB_REF GITHUB_REPOSITORY GITHUB_RUN_ID GITHUB_RUN_NUMBER GITHUB_SHA GITHUB_WORKFLOW GITHUB_WORKSPACE RUN_ID RUN_NUMBER
+			eval java -jar morphe-desktop-*.jar patch $(morphe_patches_args "-p") --options-file ./src/options/$2.json $strip_arg --out=./release/$out_name$excludePatches$includePatches --keystore=./src/morphe.keystore --force --continue-on-error ./download/$1.apk
+		); then
 			red_log "[-] Morphe patching failed for $1"
 			exit 1
 		fi
-		if ! ls ./release/$1-$2*.apk >/dev/null 2>&1; then
+		if ! ls ./release/$out_name >/dev/null 2>&1; then
 			red_log "[-] Output APK not found in ./release/ for $1"
 			exit 1
 		fi
@@ -1280,8 +1392,11 @@ morphe_disable_play_store_updates() {
 	fi
 
 	green_log "[+] Disabling Play Store updates for $1:"
-	if eval java -jar morphe-desktop-*.jar patch $patches_args --exclusive -e "\"Disable Play Store updates\"" \
-		--out="$output_apk" --keystore=./src/morphe.keystore --force "$input_apk"; then
+	if (
+		unset CI GITHUB_ACTION GITHUB_ACTIONS GITHUB_ACTOR GITHUB_ENV GITHUB_EVENT_NAME GITHUB_EVENT_PATH GITHUB_HEAD_REF GITHUB_JOB GITHUB_REF GITHUB_REPOSITORY GITHUB_RUN_ID GITHUB_RUN_NUMBER GITHUB_SHA GITHUB_WORKFLOW GITHUB_WORKSPACE RUN_ID RUN_NUMBER
+		eval java -jar morphe-desktop-*.jar patch $patches_args --exclusive -e "\"Disable Play Store updates\"" \
+			--out="$output_apk" --keystore=./src/morphe.keystore --force "$input_apk"
+	); then
 		mv "$output_apk" "$input_apk"
 	else
 		red_log "[-] Failed to disable Play Store updates for $1"
@@ -1345,6 +1460,7 @@ npatch() {
 #################################################
 
 split_editor() {
+    ensure_apkeditor
     if [[ -z "$3" || -z "$4" ]]; then
         green_log "[+] Merge splits apk to standalone apk"
         java -jar $APKEditor m -i "./download/$1" -o "./download/$1.apk" > /dev/null 2>&1
@@ -1390,15 +1506,19 @@ apk_editor() {
 
 # Split architectures using Morphe cli
 split_arch() {
-	green_log "[+] Splitting $1 to ${archs[i]}:"
+	local target_arch="${3:-${archs[i]:-arm64-v8a}}"
+	green_log "[+] Splitting $1 to $target_arch:"
 	if [ -f "./download/$1.apk" ]; then
 		get_patches_key "$1-$2"
-		eval java -jar morphe-desktop-*.jar patch \
-		$(morphe_patches_args "-p") --options-file ./src/options/$2.json \
-		--striplibs ${archs[i]} \
-		--keystore=./src/morphe.keystore --force \
-		--out=./release/$1-${archs[i]}-$2.apk$excludePatches$includePatches \
-		./download/$1.apk
+		(
+			unset CI GITHUB_ACTION GITHUB_ACTIONS GITHUB_ACTOR GITHUB_ENV GITHUB_EVENT_NAME GITHUB_EVENT_PATH GITHUB_HEAD_REF GITHUB_JOB GITHUB_REF GITHUB_REPOSITORY GITHUB_RUN_ID GITHUB_RUN_NUMBER GITHUB_SHA GITHUB_WORKFLOW GITHUB_WORKSPACE RUN_ID RUN_NUMBER
+			eval java -jar morphe-desktop-*.jar patch \
+				$(morphe_patches_args "-p") --options-file ./src/options/$2.json \
+				--striplibs "$target_arch" \
+				--keystore=./src/morphe.keystore --force --continue-on-error \
+				--out=./release/$1-${target_arch}-$2.apk$excludePatches$includePatches \
+				./download/$1.apk
+		)
 		unset version
 		unset lock_version
 		unset excludePatches
