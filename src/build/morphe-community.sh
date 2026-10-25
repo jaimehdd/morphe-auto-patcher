@@ -422,36 +422,43 @@ nagramxf() {
 	community_dl "shini-morphe" "shini-cell"
 	get_patches_key "nagramxf"
 
-	local nagram_api_url="https://api.github.com/repos/Keeperorowner/NagramXF/releases/latest"
+	# Detect compatible version from shini-morphe patch bundle
+	detect_version "fork.risin42.nagramx"
+
 	local auth_header=()
 	[ -n "$GITHUB_TOKEN" ] && auth_header=(-H "Authorization: Bearer $GITHUB_TOKEN")
-	local release_json
+	local releases_json
 	if command -v curl >/dev/null 2>&1; then
-		release_json=$(curl -sSL "${auth_header[@]}" "$nagram_api_url")
+		releases_json=$(curl -sSL "${auth_header[@]}" "https://api.github.com/repos/Keeperorowner/NagramXF/releases?per_page=10")
 	else
 		local auth_wget=()
 		[ -n "$GITHUB_TOKEN" ] && auth_wget=(--header="Authorization: Bearer $GITHUB_TOKEN")
-		release_json=$(wget -qO- "${auth_wget[@]}" "$nagram_api_url")
+		releases_json=$(wget -qO- "${auth_wget[@]}" "https://api.github.com/repos/Keeperorowner/NagramXF/releases?per_page=10")
 	fi
 
-	local apk_url
-	apk_url=$(echo "$release_json" | jq -r '.assets[] | select(.name | test("normal-arm64-v8a\\.apk$")) | .browser_download_url' | head -n1)
-	local asset_name
-	asset_name=$(echo "$release_json" | jq -r '.assets[] | select(.name | test("normal-arm64-v8a\\.apk$")) | .name' | head -n1)
+	local apk_url="" asset_name=""
+	if [[ -n "$version" ]]; then
+		apk_url=$(echo "$releases_json" | jq -r --arg ver "$version" '.[] | .assets[] | select(.name | (test($ver) and test("(normal-)?arm64-v8a\\.apk$"))) | .browser_download_url' | head -n1)
+		asset_name=$(echo "$releases_json" | jq -r --arg ver "$version" '.[] | .assets[] | select(.name | (test($ver) and test("(normal-)?arm64-v8a\\.apk$"))) | .name' | head -n1)
+	fi
 
 	if [[ -z "$apk_url" || "$apk_url" == "null" ]]; then
-		red_log "[-] Could not find NagramXF normal-arm64-v8a.apk in latest release"
+		apk_url=$(echo "$releases_json" | jq -r 'first(.[] | .assets[] | select(.name | test("(normal-)?arm64-v8a\\.apk$"))) | .browser_download_url')
+		asset_name=$(echo "$releases_json" | jq -r 'first(.[] | .assets[] | select(.name | test("(normal-)?arm64-v8a\\.apk$"))) | .name')
+	fi
+
+	if [[ -z "$apk_url" || "$apk_url" == "null" ]]; then
+		red_log "[-] Could not find NagramXF arm64-v8a.apk in Keeperorowner/NagramXF releases"
 		exit 1
 	fi
 
-	if [[ "$asset_name" =~ NagramXF-v([^.]+-[^.]+)\.([0-9]+)\. ]]; then
-		version="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
-	elif [[ "$asset_name" =~ NagramXF-v([^-]+-[^\.]+)\. ]]; then
+	if [[ "$asset_name" =~ NagramXF-v([0-9]+(\.[0-9]+)+(-[0-9a-f]+)?) ]]; then
 		version="${BASH_REMATCH[1]}"
-	else
-		version=$(echo "$release_json" | jq -r '.tag_name')
+	elif [[ -z "$version" ]]; then
+		version=$(echo "$releases_json" | jq -r 'first(.[]) | .tag_name')
 	fi
 	export version
+	export_app_version "$version"
 	green_log "[+] Target NagramXF version: $version ($asset_name)"
 
 	release_exists && return 0
