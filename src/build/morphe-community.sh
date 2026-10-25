@@ -121,7 +121,7 @@ telegram() {
 
 	community_dl "HushTelegram" "SysAdminDoc"
 	get_patches_key "telegram"
-	get_apk "org.telegram.messenger.web" "telegram-arm64-v8a" "apk" "universal"
+	get_telegram "telegram-arm64-v8a"
 
 	release_exists && return 0
 
