@@ -128,9 +128,55 @@ telegram() {
 	auto_include_community_patches "org.telegram.messenger.web" "telegram"
 
 	if [[ -n "$TELEGRAM_API_ID" && -n "$TELEGRAM_API_HASH" ]]; then
+		green_log "[+] Applying registered Telegram API credentials (ID: $TELEGRAM_API_ID)"
+		local jar_file
+		jar_file=$(ls morphe-desktop-*.jar 2>/dev/null | head -n1)
+		local mpp_file
+		mpp_file=$(ls patches-*.mpp 2>/dev/null | head -n1)
+
+		if [[ -n "$jar_file" && -n "$mpp_file" ]]; then
+			java -jar "$jar_file" options-create --patches "$mpp_file" --filter-package-name org.telegram.messenger.web --out ./src/options/hushtelegram.json 2>/dev/null || true
+		fi
+
+		python3 -c '
+import json, sys, os, glob
+
+api_id = sys.argv[1].strip()
+api_hash = sys.argv[2].strip()
+options_path = "./src/options/hushtelegram.json"
+
+data = []
+if os.path.exists(options_path):
+    try:
+        with open(options_path, "r") as f:
+            data = json.load(f)
+    except Exception:
+        data = []
+
+if not isinstance(data, list) or len(data) == 0:
+    mpp_files = glob.glob("patches-*.mpp")
+    source_name = os.path.basename(mpp_files[0]) if mpp_files else "patches-0.0.20.mpp"
+    data = [{
+        "meta": {"source": source_name},
+        "patches": {}
+    }]
+
+for bundle in data:
+    patches = bundle.setdefault("patches", {})
+    entry = patches.setdefault("Use registered Telegram API credentials", {})
+    entry["enabled"] = True
+    entry["options"] = {
+        "apiId": str(api_id),
+        "apiHash": str(api_hash)
+    }
+
+with open(options_path, "w") as f:
+    json.dump(data, f, indent=2)
+print("[+] Successfully configured apiId and apiHash in " + options_path)
+' "$TELEGRAM_API_ID" "$TELEGRAM_API_HASH"
+
 		if [[ "$communityIncludePatches" != *"-e \"Use registered Telegram API credentials\""* ]]; then
-			green_log "[+] Applying registered Telegram API credentials (ID: $TELEGRAM_API_ID)"
-			communityIncludePatches+=" -e \"Use registered Telegram API credentials\" -O apiId=$TELEGRAM_API_ID -O apiHash=$TELEGRAM_API_HASH"
+			communityIncludePatches+=" -e \"Use registered Telegram API credentials\""
 		fi
 	else
 		communityIncludePatches="${communityIncludePatches//-e \"Use registered Telegram API credentials\"/}"
@@ -138,6 +184,28 @@ telegram() {
 	fi
 
 	community_patch "telegram-arm64-v8a" "hushtelegram"
+
+	if [[ -n "$TELEGRAM_API_ID" && -n "$TELEGRAM_API_HASH" ]]; then
+		python3 -c '
+import zipfile, sys
+
+apk_path = sys.argv[1]
+api_hash = sys.argv[2].encode("ascii")
+
+found = False
+with zipfile.ZipFile(apk_path) as z:
+    for name in z.namelist():
+        if name.endswith(".dex"):
+            if api_hash in z.read(name):
+                found = True
+                break
+
+if not found:
+    print("[-] ERROR: Registered Telegram API credentials were NOT applied to APK!", file=sys.stderr)
+    sys.exit(1)
+print("[+] Verification passed: Registered Telegram API credentials confirmed in patched APK.")
+' "./release/telegram-arm64-v8a-hushtelegram.apk" "$TELEGRAM_API_HASH"
+	fi
 }
 telegram-hushtelegram() { telegram; }
 
