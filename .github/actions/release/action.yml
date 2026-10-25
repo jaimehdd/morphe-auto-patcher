@@ -81,6 +81,14 @@ runs:
               echo "* **hxreborn Patches**: [hxreborn/morphe-patches](https://github.com/hxreborn/morphe-patches/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
+            michii)
+              echo "* **Michii Patches**: [heyymichii/michii-patches](https://github.com/heyymichii/michii-patches/releases)"
+              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
+              ;;
+            hushtelegram)
+              echo "* **HushTelegram Patches**: [SysAdminDoc/HushTelegram](https://github.com/SysAdminDoc/HushTelegram/releases)"
+              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
+              ;;
             *)
               echo "* **Morphe Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
@@ -103,7 +111,9 @@ runs:
           echo "| **hoo-dles** | [hoo-dles/morphe-patches](https://github.com/hoo-dles/morphe-patches/releases) | FotMob |"
           echo "| **Hooman** | [arandomhooman/hoomans-morphe-patches](https://github.com/arandomhooman/hoomans-morphe-patches/releases) | Poweramp |"
           echo "| **Hushfeed** | [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases) | TikTok |"
+          echo "| **HushTelegram** | [SysAdminDoc/HushTelegram](https://github.com/SysAdminDoc/HushTelegram/releases) | Telegram |"
           echo "| **hxreborn** | [hxreborn/morphe-patches](https://github.com/hxreborn/morphe-patches/releases) | ReadEra |"
+          echo "| **Michii** | [heyymichii/michii-patches](https://github.com/heyymichii/michii-patches/releases) | LinkedIn |"
           echo "| **Rushi** | [rushiranpise/morphe-patches](https://github.com/rushiranpise/morphe-patches/releases) | AdGuard, Windy, Komoot, Strava |"
           echo "| **Morphe Desktop** | [MorpheApp/morphe-desktop](https://github.com/MorpheApp/morphe-desktop/releases) | CLI & Patcher Engine |"
           echo ""

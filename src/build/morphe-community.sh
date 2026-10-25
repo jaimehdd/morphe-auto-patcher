@@ -113,6 +113,24 @@ tiktok() {
 	community_patch "tiktok-arm64-v8a" "hushfeed"
 }
 
+telegram() {
+	APP_NAME="telegram"
+	VARIANT="hushtelegram"
+	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
+
+	community_dl "HushTelegram" "SysAdminDoc"
+	get_patches_key "telegram"
+	get_apk "org.telegram.messenger.web" "telegram-arm64-v8a" "apk" "universal"
+
+	release_exists && return 0
+
+	auto_include_community_patches "org.telegram.messenger.web" "telegram"
+	detachPlayStoreUpdates=true
+	community_patch "telegram-arm64-v8a" "hushtelegram"
+}
+telegram-hushtelegram() { telegram; }
+
 # ==============================================================================
 # Group 2: Media, Audio & Photos
 # ==============================================================================
@@ -302,6 +320,21 @@ reddit-adobo() {
 	patch "reddit-arm64-v8a" "adobo" "morphe"
 }
 
+linkedin() {
+	APP_NAME="linkedin"
+	VARIANT="michii"
+	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
+
+	community_dl "michii-patches" "heyymichii"
+	get_patches_key "linkedin"
+	get_apk "com.linkedin.android" "linkedin-arm64-v8a" "bundle" "arm64-v8a"
+
+	release_exists && return 0
+
+	community_patch "linkedin-arm64-v8a" "michii"
+}
+
 # ==============================================================================
 # Dispatcher
 # ==============================================================================
@@ -351,5 +384,11 @@ case "$1" in
 		;;
 	reddit-adobo|reddit)
 		reddit-adobo
+		;;
+	linkedin|linkedin-michii)
+		linkedin
+		;;
+	telegram|telegram-hushtelegram)
+		telegram
 		;;
 esac
