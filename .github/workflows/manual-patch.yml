@@ -137,6 +137,8 @@ jobs:
         if: steps.check-gh-derv.outputs.internet_error == '0'
         env:
           use_beta: ${{ inputs.use_beta }}
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
         run: bash src/build/morphe-community.sh ${{ matrix.run }}
       - name: Releasing APK files
         id: release-derv

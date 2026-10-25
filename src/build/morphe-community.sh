@@ -126,6 +126,17 @@ telegram() {
 	release_exists && return 0
 
 	auto_include_community_patches "org.telegram.messenger.web" "telegram"
+
+	if [[ -n "$TELEGRAM_API_ID" && -n "$TELEGRAM_API_HASH" ]]; then
+		if [[ "$communityIncludePatches" != *"-e \"Use registered Telegram API credentials\""* ]]; then
+			green_log "[+] Applying registered Telegram API credentials (ID: $TELEGRAM_API_ID)"
+			communityIncludePatches+=" -e \"Use registered Telegram API credentials\" -O apiId=$TELEGRAM_API_ID -O apiHash=$TELEGRAM_API_HASH"
+		fi
+	else
+		communityIncludePatches="${communityIncludePatches//-e \"Use registered Telegram API credentials\"/}"
+		communityExcludePatches+=" -d \"Use registered Telegram API credentials\""
+	fi
+
 	community_patch "telegram-arm64-v8a" "hushtelegram"
 }
 telegram-hushtelegram() { telegram; }
