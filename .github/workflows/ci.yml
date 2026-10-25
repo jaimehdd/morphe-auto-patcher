@@ -76,6 +76,14 @@ jobs:
         id: check-hxreborn
         if: steps.check-gh.outputs.internet_error == '0'
         run: bash src/etc/ci.sh hxreborn/morphe-patches latest readera.*hxreborn.*apk
+      - name: Check new patch michii
+        id: check-michii
+        if: steps.check-gh.outputs.internet_error == '0'
+        run: bash src/etc/ci.sh heyymichii/michii-patches latest linkedin.*michii.*apk
+      - name: Check new patch shini-cell
+        id: check-shini-cell
+        if: steps.check-gh.outputs.internet_error == '0'
+        run: bash src/etc/ci.sh shini-cell/shini-morphe latest nagramxf.*shini-cell.*apk
       - name: Combine check outputs
         id: combine-community
         if: steps.check-gh.outputs.internet_error == '0'
@@ -84,10 +92,12 @@ jobs:
           [ "${{ steps.check-hushgram.outputs.new_patch }}" = "1" ] && targets+=("instagram")
           [ "${{ steps.check-hushfacebook.outputs.new_patch }}" = "1" ] && targets+=("facebook")
           [ "${{ steps.check-hushmessenger.outputs.new_patch }}" = "1" ] && targets+=("messenger")
+          [ "${{ steps.check-shini-cell.outputs.new_patch }}" = "1" ] && targets+=("nagramxf")
           [ "${{ steps.check-hushfeed.outputs.new_patch }}" = "1" ] && targets+=("tiktok")
           [ "${{ steps.check-akash-sriram.outputs.new_patch }}" = "1" ] && targets+=("photos")
           [ "${{ steps.check-binarymend.outputs.new_patch }}" = "1" ] && targets+=("moonreader")
           [ "${{ steps.check-hxreborn.outputs.new_patch }}" = "1" ] && targets+=("readera")
+          [ "${{ steps.check-michii.outputs.new_patch }}" = "1" ] && targets+=("linkedin")
           [ "${{ steps.check-hoo-dles.outputs.new_patch }}" = "1" ] && targets+=("fotmob")
           [ "${{ steps.check-hooman.outputs.new_patch }}" = "1" ] && targets+=("poweramp")
           [ "${{ steps.check-dh6k.outputs.new_patch }}" = "1" ] && targets+=("brave")

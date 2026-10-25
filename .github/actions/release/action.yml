@@ -81,6 +81,14 @@ runs:
               echo "* **hxreborn Patches**: [hxreborn/morphe-patches](https://github.com/hxreborn/morphe-patches/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
+            michii)
+              echo "* **Michii Patches**: [heyymichii/michii-patches](https://github.com/heyymichii/michii-patches/releases)"
+              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
+              ;;
+            shini-cell)
+              echo "* **Shini Morphe Patches**: [shini-cell/shini-morphe](https://github.com/shini-cell/shini-morphe/releases)"
+              echo "* **NagramXF Upstream**: [Keeperorowner/NagramXF](https://github.com/Keeperorowner/NagramXF/releases)"
+              ;;
             *)
               echo "* **Morphe Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
@@ -104,7 +112,9 @@ runs:
           echo "| **Hooman** | [arandomhooman/hoomans-morphe-patches](https://github.com/arandomhooman/hoomans-morphe-patches/releases) | Poweramp |"
           echo "| **Hushfeed** | [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases) | TikTok |"
           echo "| **hxreborn** | [hxreborn/morphe-patches](https://github.com/hxreborn/morphe-patches/releases) | ReadEra |"
+          echo "| **Michii** | [heyymichii/michii-patches](https://github.com/heyymichii/michii-patches/releases) | LinkedIn |"
           echo "| **Rushi** | [rushiranpise/morphe-patches](https://github.com/rushiranpise/morphe-patches/releases) | AdGuard, Windy, Komoot, Strava |"
+          echo "| **Shini** | [shini-cell/shini-morphe](https://github.com/shini-cell/shini-morphe/releases) | Nagram XF |"
           echo "| **Morphe Desktop** | [MorpheApp/morphe-desktop](https://github.com/MorpheApp/morphe-desktop/releases) | CLI & Patcher Engine |"
           echo ""
           echo "</details>"

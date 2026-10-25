@@ -302,6 +302,83 @@ reddit-adobo() {
 	patch "reddit-arm64-v8a" "adobo" "morphe"
 }
 
+linkedin() {
+	APP_NAME="linkedin"
+	VARIANT="michii"
+	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
+
+	community_dl "michii-patches" "heyymichii"
+	get_patches_key "linkedin"
+	get_apk "com.linkedin.android" "linkedin-arm64-v8a" "bundle" "arm64-v8a"
+
+	release_exists && return 0
+
+	community_patch "linkedin-arm64-v8a" "michii"
+}
+
+nagramxf() {
+	APP_NAME="nagramxf"
+	VARIANT="shini-cell"
+	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
+
+	community_dl "shini-morphe" "shini-cell"
+	get_patches_key "nagramxf"
+
+	# Detect compatible version from shini-morphe patch bundle
+	detect_version "fork.risin42.nagramx"
+
+	local auth_header=()
+	[ -n "$GITHUB_TOKEN" ] && auth_header=(-H "Authorization: Bearer $GITHUB_TOKEN")
+	local releases_json
+	if command -v curl >/dev/null 2>&1; then
+		releases_json=$(curl -sSL "${auth_header[@]}" "https://api.github.com/repos/Keeperorowner/NagramXF/releases?per_page=10")
+	else
+		local auth_wget=()
+		[ -n "$GITHUB_TOKEN" ] && auth_wget=(--header="Authorization: Bearer $GITHUB_TOKEN")
+		releases_json=$(wget -qO- "${auth_wget[@]}" "https://api.github.com/repos/Keeperorowner/NagramXF/releases?per_page=10")
+	fi
+
+	local apk_url="" asset_name=""
+	if [[ -n "$version" ]]; then
+		apk_url=$(echo "$releases_json" | jq -r --arg ver "$version" '.[] | .assets[] | select(.name | (test($ver) and test("(normal-)?arm64-v8a\\.apk$"))) | .browser_download_url' | head -n1)
+		asset_name=$(echo "$releases_json" | jq -r --arg ver "$version" '.[] | .assets[] | select(.name | (test($ver) and test("(normal-)?arm64-v8a\\.apk$"))) | .name' | head -n1)
+	fi
+
+	if [[ -z "$apk_url" || "$apk_url" == "null" ]]; then
+		apk_url=$(echo "$releases_json" | jq -r 'first(.[] | .assets[] | select(.name | test("(normal-)?arm64-v8a\\.apk$"))) | .browser_download_url')
+		asset_name=$(echo "$releases_json" | jq -r 'first(.[] | .assets[] | select(.name | test("(normal-)?arm64-v8a\\.apk$"))) | .name')
+	fi
+
+	if [[ -z "$apk_url" || "$apk_url" == "null" ]]; then
+		red_log "[-] Could not find NagramXF arm64-v8a.apk in Keeperorowner/NagramXF releases"
+		exit 1
+	fi
+
+	if [[ "$asset_name" =~ NagramXF-v([0-9]+(\.[0-9]+)+(-[0-9a-f]+)?) ]]; then
+		version="${BASH_REMATCH[1]}"
+	elif [[ -z "$version" ]]; then
+		version=$(echo "$releases_json" | jq -r 'first(.[]) | .tag_name')
+	fi
+	export version
+	export_app_version "$version"
+	green_log "[+] Target NagramXF version: $version ($asset_name)"
+
+	release_exists && return 0
+
+	mkdir -p ./download
+	green_log "[+] Downloading $asset_name from Keeperorowner/NagramXF"
+	if command -v curl >/dev/null 2>&1; then
+		curl -sSL -o "./download/nagramxf-arm64-v8a.apk" "$apk_url"
+	else
+		wget -q -O "./download/nagramxf-arm64-v8a.apk" "$apk_url"
+	fi
+
+	community_patch "nagramxf-arm64-v8a" "shini-cell"
+}
+nagramxf-shini-cell() { nagramxf; }
+
 # ==============================================================================
 # Dispatcher
 # ==============================================================================
@@ -351,5 +428,11 @@ case "$1" in
 		;;
 	reddit-adobo|reddit)
 		reddit-adobo
+		;;
+	linkedin|linkedin-michii)
+		linkedin
+		;;
+	nagramxf|nagramxf-shini-cell)
+		nagramxf
 		;;
 esac
