@@ -36,10 +36,10 @@ jobs:
         id: check-binarymend
         if: steps.check-gh.outputs.internet_error == '0'
         run: bash src/etc/ci.sh binarymend/morphe-patches latest moonreader.*binarymend.*apk
-      - name: Check new patch hoo-dles
-        id: check-hoo-dles
+      - name: Check new patch heval
+        id: check-heval
         if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh hoo-dles/morphe-patches latest fotmob.*hoo-dles.*apk
+        run: bash src/etc/ci.sh heval99/Heval-Morphe-Patches latest "fotmob.*heval.*apk"
       - name: Check new patch hooman
         id: check-hooman
         if: steps.check-gh.outputs.internet_error == '0'
@@ -98,7 +98,7 @@ jobs:
           [ "${{ steps.check-binarymend.outputs.new_patch }}" = "1" ] && targets+=("moonreader")
           [ "${{ steps.check-hxreborn.outputs.new_patch }}" = "1" ] && targets+=("readera")
           [ "${{ steps.check-michii.outputs.new_patch }}" = "1" ] && targets+=("linkedin")
-          [ "${{ steps.check-hoo-dles.outputs.new_patch }}" = "1" ] && targets+=("fotmob")
+          [ "${{ steps.check-heval.outputs.new_patch }}" = "1" ] && targets+=("fotmob")
           [ "${{ steps.check-hooman.outputs.new_patch }}" = "1" ] && targets+=("poweramp")
           [ "${{ steps.check-dh6k.outputs.new_patch }}" = "1" ] && targets+=("brave")
           [ "${{ steps.check-adobo.outputs.new_patch }}" = "1" ] && targets+=("reddit-adobo")

@@ -270,7 +270,7 @@ get_patches_key() {
 			if [[ "$line1" =~ ^[[:space:]]*#[[:space:]]*\[?([Mm]orphe|[Uu]niversal) ]]; then
 				current_section="morphe"
 				continue
-			elif [[ "$line1" =~ ^[[:space:]]*#[[:space:]]*\[?([Aa]dobo|[Cc]ommunity|[Pp]iko|[Rr]ushi|[Bb]inarymend|[Hh]oo-dles|[Hh]ooman|[Dd]h6k|[Tt]ik[Tt]ok|[Aa]ndrew|[Pp]rathxm|[Hh]ushfeed|[Hh]ush[Ff]acebook|[Hh]ush[Gg]ram|[Hh]ush[Mm]essenger|[Aa]kash-[Ss]riram|[Hh]xreborn|[Mm]ichii|[Ss]hini) ]]; then
+			elif [[ "$line1" =~ ^[[:space:]]*#[[:space:]]*\[?([Aa]dobo|[Cc]ommunity|[Pp]iko|[Rr]ushi|[Bb]inarymend|[Hh]oo-dles|[Hh]ooman|[Dd]h6k|[Tt]ik[Tt]ok|[Aa]ndrew|[Pp]rathxm|[Hh]ushfeed|[Hh]ush[Ff]acebook|[Hh]ush[Gg]ram|[Hh]ush[Mm]essenger|[Aa]kash-[Ss]riram|[Hh]xreborn|[Mm]ichii|[Ss]hini|[Hh]eval) ]]; then
 				current_section="community"
 				continue
 			elif [[ "$line1" =~ ^[[:space:]]*# ]]; then
@@ -296,7 +296,7 @@ get_patches_key() {
 			if [[ "$line2" =~ ^[[:space:]]*#[[:space:]]*\[?([Mm]orphe|[Uu]niversal) ]]; then
 				current_section="morphe"
 				continue
-			elif [[ "$line2" =~ ^[[:space:]]*#[[:space:]]*\[?([Aa]dobo|[Cc]ommunity|[Pp]iko|[Rr]ushi|[Bb]inarymend|[Hh]oo-dles|[Hh]ooman|[Dd]h6k|[Tt]ik[Tt]ok|[Aa]ndrew|[Pp]rathxm|[Hh]ushfeed|[Hh]ush[Ff]acebook|[Hh]ush[Gg]ram|[Hh]ush[Mm]essenger|[Aa]kash-[Ss]riram|[Hh]xreborn|[Mm]ichii|[Ss]hini) ]]; then
+			elif [[ "$line2" =~ ^[[:space:]]*#[[:space:]]*\[?([Aa]dobo|[Cc]ommunity|[Pp]iko|[Rr]ushi|[Bb]inarymend|[Hh]oo-dles|[Hh]ooman|[Dd]h6k|[Tt]ik[Tt]ok|[Aa]ndrew|[Pp]rathxm|[Hh]ushfeed|[Hh]ush[Ff]acebook|[Hh]ush[Gg]ram|[Hh]ush[Mm]essenger|[Aa]kash-[Ss]riram|[Hh]xreborn|[Mm]ichii|[Ss]hini|[Hh]eval) ]]; then
 				current_section="community"
 				continue
 			elif [[ "$line2" =~ ^[[:space:]]*# ]]; then

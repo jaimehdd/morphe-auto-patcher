@@ -57,8 +57,8 @@ runs:
               echo "* **Rushi Patches**: [rushiranpise/morphe-patches](https://github.com/rushiranpise/morphe-patches/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
-            hoo-dles)
-              echo "* **hoo-dles Patches**: [hoo-dles/morphe-patches](https://github.com/hoo-dles/morphe-patches/releases)"
+            heval)
+              echo "* **Heval Patches**: [heval99/Heval-Morphe-Patches](https://github.com/heval99/Heval-Morphe-Patches/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
             binarymend)
@@ -108,7 +108,7 @@ runs:
           echo "| **Akash Sriram** | [Akash-Sriram/morphe-google-photos](https://github.com/Akash-Sriram/morphe-google-photos/releases) | Google Photos |"
           echo "| **Binarymend** | [binarymend/morphe-patches](https://github.com/binarymend/morphe-patches/releases) | Moon+ Reader |"
           echo "| **dh6k** | [dh6k/morphe-patches](https://github.com/dh6k/morphe-patches/releases) | Brave Browser |"
-          echo "| **hoo-dles** | [hoo-dles/morphe-patches](https://github.com/hoo-dles/morphe-patches/releases) | FotMob |"
+          echo "| **Heval** | [heval99/Heval-Morphe-Patches](https://github.com/heval99/Heval-Morphe-Patches/releases) | FotMob |"
           echo "| **Hooman** | [arandomhooman/hoomans-morphe-patches](https://github.com/arandomhooman/hoomans-morphe-patches/releases) | Poweramp |"
           echo "| **Hushfeed** | [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases) | TikTok |"
           echo "| **hxreborn** | [hxreborn/morphe-patches](https://github.com/hxreborn/morphe-patches/releases) | ReadEra |"

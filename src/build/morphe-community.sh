@@ -183,17 +183,17 @@ readera() {
 
 fotmob() {
 	APP_NAME="fotmob"
-	VARIANT="hoo-dles"
+	VARIANT="heval"
 	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
 
-	community_dl "morphe-patches" "hoo-dles"
+	community_dl "Heval-Morphe-Patches" "heval99"
 	get_patches_key "fotmob"
 	get_apk "com.mobilefootie.wc2010" "fotmob-arm64-v8a" "bundle" "universal" "nodpi" "Android 12L+"
 
 	release_exists && return 0
 
-	community_patch "fotmob-arm64-v8a" "hoo-dles"
+	community_patch "fotmob-arm64-v8a" "heval"
 }
 
 komoot() {
