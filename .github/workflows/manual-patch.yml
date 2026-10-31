@@ -73,7 +73,7 @@ jobs:
             echo "morphe_targets=[\"$dispatch_app\"]" >> $GITHUB_OUTPUT
           else
             echo 'community_targets=["photos","instagram","messenger","fotmob","windy","moonreader","adguard","komoot","brave","poweramp","tiktok","reddit-adobo","facebook","readera","linkedin","nagramxf"]' >> $GITHUB_OUTPUT
-            echo 'morphe_targets=["youtube","reddit","youtube-music"]' >> $GITHUB_OUTPUT
+            echo 'morphe_targets=["youtube","youtube-music"]' >> $GITHUB_OUTPUT
           fi
 
   patch_morphe:

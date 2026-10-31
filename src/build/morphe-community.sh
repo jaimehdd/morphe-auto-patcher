@@ -271,6 +271,26 @@ reddit-adobo() {
 	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
 
 	community_dl "adobo" "jkennethcarino" "prerelease"
+
+	local morphe_mpp="" adobo_mpp=""
+	for f in morphe-universal-*.mpp*; do
+		[ -e "$f" ] && morphe_mpp="$f" && break
+	done
+	for f in patches-*.mpp adobo-*.mpp; do
+		[ -e "$f" ] && adobo_mpp="$f" && break
+	done
+
+	local morphe_ver="" adobo_ver=""
+	[[ -n "$morphe_mpp" ]] && morphe_ver=$(get_patch_version_from_asset_name "$morphe_mpp")
+	[[ -n "$adobo_mpp" ]] && adobo_ver=$(get_patch_version_from_asset_name "$adobo_mpp")
+
+	if [[ -n "$morphe_ver" && -n "$adobo_ver" ]]; then
+		patch_version="m${morphe_ver}-a${adobo_ver}"
+		export patch_version
+		[ -n "$GITHUB_ENV" ] && echo "patch_version=$patch_version" >> "$GITHUB_ENV"
+		green_log "[+] Combined Reddit Patch version: $patch_version (Morphe: $morphe_ver, Adobo: $adobo_ver)"
+	fi
+
 	get_patches_key "reddit-adobo"
 	get_apk "com.reddit.frontpage" "reddit" "bundle_extract"
 

@@ -50,14 +50,9 @@ export_app_version() {
 	green_log "[+] APP_VERSION: ${app_version:-unknown}"
 }
 
-set_patch_version_from_asset_name() {
-	local asset_name="$1"
-	local skip_export="${2:-false}"
+get_patch_version_from_asset_name() {
+	local asset_name="${1%.disabled}"
 	local detected_patch_version=""
-
-	if [[ "$skip_export" == "true" ]]; then
-		return 0
-	fi
 
 	if [[ $asset_name == *.jar ]] && [[ $asset_name == *"revanced-patches"* ]]; then
 		# arsclib jar files: revanced-patches-X.Y.Z.jar
@@ -83,6 +78,20 @@ set_patch_version_from_asset_name() {
 		detected_patch_version=${detected_patch_version%.apk}
 		detected_patch_version=${detected_patch_version#v}
 	fi
+
+	printf '%s' "$detected_patch_version"
+}
+
+set_patch_version_from_asset_name() {
+	local asset_name="$1"
+	local skip_export="${2:-false}"
+
+	if [[ "$skip_export" == "true" ]]; then
+		return 0
+	fi
+
+	local detected_patch_version
+	detected_patch_version=$(get_patch_version_from_asset_name "$asset_name")
 
 	if [[ -n "$detected_patch_version" ]]; then
 		patch_version="$detected_patch_version"

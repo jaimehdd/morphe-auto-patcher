@@ -27,7 +27,7 @@ jobs:
       - name: Check new patch Morphe
         id: check-morphe
         if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh MorpheApp/morphe-patches latest "youtube:^youtube-arm64-v8a-morphe\.apk$" "youtube-music:^youtube-music-arm64-v8a-morphe\.apk$" "reddit:^reddit-arm64-v8a-morphe\.apk$"
+        run: bash src/etc/ci.sh MorpheApp/morphe-patches latest "youtube:^youtube-arm64-v8a-morphe\.apk$" "youtube-music:^youtube-music-arm64-v8a-morphe\.apk$" "reddit-adobo:reddit.*adobo.*apk"
       - name: Check new patch HushGram
         id: check-hushgram
         if: steps.check-gh.outputs.internet_error == '0'
@@ -63,7 +63,7 @@ jobs:
       - name: Check new patch Adobo
         id: check-adobo
         if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh jkennethcarino/adobo all "reddit.*adobo.*apk"
+        run: bash src/etc/ci.sh jkennethcarino/adobo all "reddit-adobo:reddit.*adobo.*apk"
       - name: Check new patch HushFacebook
         id: check-hushfacebook
         if: steps.check-gh.outputs.internet_error == '0'
@@ -111,20 +111,39 @@ jobs:
             fi
           fi
 
+          m_targets_clean=()
+          morphe_has_new=0
           if [ "${{ steps.check-morphe.outputs.new_patch }}" = "1" ]; then
             read -ra m_targets <<< "${{ steps.check-morphe.outputs.targets }}"
             if [ ${#m_targets[@]} -gt 0 ]; then
-              morphe_json=$(jq -c -n '$ARGS.positional' --args "${m_targets[@]}")
+              for t in "${m_targets[@]}"; do
+                if [ "$t" = "reddit-adobo" ]; then
+                  targets+=("reddit-adobo")
+                else
+                  m_targets_clean+=("$t")
+                fi
+              done
+              if [ ${#m_targets_clean[@]} -gt 0 ]; then
+                morphe_json=$(jq -c -n '$ARGS.positional' --args "${m_targets_clean[@]}")
+                morphe_has_new=1
+              else
+                morphe_json='[]'
+                morphe_has_new=0
+              fi
             else
-              morphe_json='["youtube","reddit","youtube-music"]'
+              morphe_json='["youtube","youtube-music"]'
+              morphe_has_new=1
             fi
             echo "morphe_targets=$morphe_json" >> $GITHUB_OUTPUT
+            echo "check_morphe=$morphe_has_new" >> $GITHUB_OUTPUT
           else
             echo "morphe_targets=[]" >> $GITHUB_OUTPUT
+            echo "check_morphe=0" >> $GITHUB_OUTPUT
           fi
 
           if [ ${#targets[@]} -gt 0 ]; then
-            json=$(jq -c -n '$ARGS.positional' --args "${targets[@]}")
+            unique_targets=($(printf "%s\n" "${targets[@]}" | sort -u))
+            json=$(jq -c -n '$ARGS.positional' --args "${unique_targets[@]}")
             echo "targets=$json" >> $GITHUB_OUTPUT
             echo "new_patch=1" >> $GITHUB_OUTPUT
             echo "Target apps to build: $json"
@@ -155,7 +174,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
-      check_morphe: ${{ steps.check-morphe.outputs.new_patch }}
+      check_morphe: ${{ steps.combine-community.outputs.check_morphe }}
       morphe_targets: ${{ steps.combine-community.outputs.morphe_targets }}
       check_morphe_community: ${{ steps.combine-community.outputs.new_patch }}
       community_targets: ${{ steps.combine-community.outputs.targets }}

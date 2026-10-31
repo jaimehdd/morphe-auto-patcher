@@ -180,6 +180,31 @@ poweramp() {
 	community_patch "poweramp" "hooman"
 }
 
+morphe_dl() {
+	local patches_tag="latest"
+	[ "$use_beta" = true ] && patches_tag="prerelease"
+	dl_gh "morphe-patches" "MorpheApp" "$patches_tag"
+	dl_gh "morphe-desktop" "MorpheApp" "$patches_tag" "true"
+}
+
+reddit() {
+	APP_NAME="reddit"
+	VARIANT="morphe"
+	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
+
+	morphe_dl
+	get_patches_key "reddit-morphe"
+	prefer_version="${reddit_experimental_support:-2026.16.0}"
+	get_apk "com.reddit.frontpage" "reddit" "bundle_extract"
+
+	release_exists && return 0
+
+	# Patch Arm64-v8a:
+	split_editor "reddit" "reddit-arm64-v8a" "exclude" "split_config.armeabi_v7a split_config.x86_64 split_config.mdpi split_config.ldpi split_config.hdpi split_config.xhdpi split_config.xxhdpi split_config.tvdpi"
+	patch "reddit-arm64-v8a" "morphe" "morphe"
+}
+
 case "$1" in
 	messenger)
 		messenger
@@ -204,5 +229,8 @@ case "$1" in
 		;;
 	poweramp)
 		poweramp
+		;;
+	reddit|reddit-morphe)
+		reddit
 		;;
 esac
