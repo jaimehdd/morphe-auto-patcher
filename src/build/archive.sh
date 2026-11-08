@@ -88,22 +88,6 @@ messenger() {
 	community_patch "messenger-arm64-v8a" "derevanced"
 }
 
-strava() {
-	APP_NAME="strava"
-	VARIANT="rushi"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-
-	rushi_dl
-	get_patches_key "strava"
-	get_apk_uptodown "com.strava" "strava-arm64-v8a" "bundle" || \
-	get_apk_chplay "com.strava" "strava-arm64-v8a" "bundle"
-
-	release_exists && return 0
-
-	community_patch "strava-arm64-v8a" "rushi"
-}
-
 fotmob() {
 	APP_NAME="fotmob"
 	VARIANT="hoo-dles"
@@ -211,9 +195,6 @@ case "$1" in
 		;;
 	photos)
 		photos
-		;;
-	strava)
-		strava
 		;;
 	fotmob)
 		fotmob

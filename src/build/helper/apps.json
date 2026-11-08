@@ -164,9 +164,9 @@
       "list_url": "https://www.apkmirror.com/uploads/?appcategory=poweramp",
       "example_url": "https://www.apkmirror.com/apk/max-mp/poweramp/poweramp-music-player-build-1024-bundle-play-release/"
     },
-    "org.readera": {
-      "list_url": "https://www.apkmirror.com/uploads/?appcategory=readera",
-      "example_url": "https://www.apkmirror.com/apk/readera-llc/readera-free-ebook-reader/readera-book-reader-pdf-epub-26-09-292320-release/"
+    "com.laurencedawson.reddit_sync": {
+      "list_url": "https://www.apkmirror.com/uploads/?appcategory=sync-for-reddit",
+      "example_url": "https://www.apkmirror.com/apk/red-apps-ltd/sync-for-reddit/sync-for-reddit-v23-06-30-13-39-release/"
     }
   },
   "uptodown": {
@@ -203,14 +203,11 @@
     "com.microblink.photomath": {
       "url": "https://photomath.en.uptodown.com/android"
     },
-    "com.strava": {
-      "url": "https://strava.en.uptodown.com/android"
-    },
     "com.zhiliaoapp.musically": {
       "url": "https://tiktok.en.uptodown.com/android"
     },
-    "org.readera": {
-      "url": "https://readera.en.uptodown.com/android"
+    "com.laurencedawson.reddit_sync": {
+      "url": "https://sync-for-reddit.en.uptodown.com/android"
     }
   }
 }

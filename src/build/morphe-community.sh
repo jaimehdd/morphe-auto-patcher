@@ -134,17 +134,17 @@ photos() {
 
 poweramp() {
 	APP_NAME="poweramp"
-	VARIANT="hooman"
+	VARIANT="mwbra130"
 	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
 
-	community_dl "hoomans-morphe-patches" "arandomhooman"
+	community_dl "Retro-Bowl-College" "mwbra130"
 	get_patches_key "poweramp"
 	get_apk "com.maxmpz.audioplayer" "poweramp" "bundle"
 
 	release_exists && return 0
 
-	community_patch "poweramp" "hooman"
+	community_patch "poweramp" "mwbra130"
 }
 
 moonreader() {
@@ -162,20 +162,6 @@ moonreader() {
 	community_patch "moonreader-arm64-v8a" "binarymend"
 }
 
-readera() {
-	APP_NAME="readera"
-	VARIANT="hxreborn"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-
-	community_dl "morphe-patches" "hxreborn"
-	get_patches_key "readera"
-	get_apk "org.readera" "readera-arm64-v8a" "bundle"
-
-	release_exists && return 0
-
-	community_patch "readera-arm64-v8a" "hxreborn"
-}
 
 # ==============================================================================
 # Group 3: Sports, Fitness & Navigation
@@ -198,17 +184,17 @@ fotmob() {
 
 komoot() {
 	APP_NAME="komoot"
-	VARIANT="rushi"
+	VARIANT="riky"
 	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
 
-	community_dl "morphe-patches" "rushiranpise"
+	community_dl "morphe-patches" "riky-dev"
 	get_patches_key "komoot"
 	get_apk "de.komoot.android" "komoot-arm64-v8a" "bundle"
 
 	release_exists && return 0
 
-	community_patch "komoot-arm64-v8a" "rushi"
+	community_patch "komoot-arm64-v8a" "riky"
 }
 
 # ==============================================================================
@@ -247,17 +233,17 @@ brave() {
 
 windy() {
 	APP_NAME="windy"
-	VARIANT="rushi"
+	VARIANT="amfakh"
 	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
 
-	community_dl "morphe-patches" "rushiranpise"
+	community_dl "fakh-patches" "amfakh"
 	get_patches_key "windy"
 	get_apk "com.windyty.android" "windy-arm64-v8a" "bundle" "universal" "120-640dpi" "Android 12L+"
 
 	release_exists && return 0
 
-	community_patch "windy-arm64-v8a" "rushi"
+	community_patch "windy-arm64-v8a" "amfakh"
 }
 
 # ==============================================================================
@@ -309,17 +295,32 @@ reddit-adobo() {
 
 linkedin() {
 	APP_NAME="linkedin"
-	VARIANT="michii"
+	VARIANT="badfella"
 	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
 
-	community_dl "michii-patches" "heyymichii"
+	community_dl "BadFella-Patches" "XBadFellaX"
 	get_patches_key "linkedin"
 	get_apk "com.linkedin.android" "linkedin-arm64-v8a" "bundle" "arm64-v8a"
 
 	release_exists && return 0
 
-	community_patch "linkedin-arm64-v8a" "michii"
+	community_patch "linkedin-arm64-v8a" "badfella"
+}
+
+reddit-sync() {
+	APP_NAME="reddit-sync"
+	VARIANT="patcheddit"
+	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
+
+	community_dl "patcheddit" "wchill"
+	get_patches_key "reddit-sync"
+	get_apk "com.laurencedawson.reddit_sync" "reddit-sync" "bundle"
+
+	release_exists && return 0
+
+	community_patch "reddit-sync" "patcheddit"
 }
 
 nagramxf() {
@@ -410,9 +411,6 @@ case "$1" in
 	moonreader)
 		moonreader
 		;;
-	readera|readera-hxreborn)
-		readera
-		;;
 	fotmob)
 		fotmob
 		;;
@@ -431,8 +429,11 @@ case "$1" in
 	reddit-adobo|reddit)
 		reddit-adobo
 		;;
-	linkedin|linkedin-michii)
+	linkedin|linkedin-badfella|linkedin-michii)
 		linkedin
+		;;
+	sync|reddit-sync)
+		reddit-sync
 		;;
 	nagramxf|nagramxf-shini-cell)
 		nagramxf

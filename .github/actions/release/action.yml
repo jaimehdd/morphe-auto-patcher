@@ -19,6 +19,14 @@ runs:
       if: env.has_files == 'true'
       shell: bash
       run: |
+        tag_prefix="${APP_NAME}"
+        if [[ "${VARIANT}" =~ ^hush ]]; then
+          tag_prefix="${APP_NAME}-hush"
+        fi
+        release_tag="${tag_prefix}-${APP_VERSION}-${patch_version}"
+        echo "RELEASE_TAG=${release_tag}" >> $GITHUB_ENV
+        echo "APP_NAME_FILTER=${tag_prefix}" >> $GITHUB_ENV
+
         changelog_file="${{ github.workspace }}-CHANGELOG.txt"
         {
           echo "### 📦 Build Details"
@@ -69,20 +77,32 @@ runs:
               echo "* **dh6k Patches**: [dh6k/morphe-patches](https://github.com/dh6k/morphe-patches/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
-            hooman)
-              echo "* **Hooman Patches**: [arandomhooman/hoomans-morphe-patches](https://github.com/arandomhooman/hoomans-morphe-patches/releases)"
+            mwbra130)
+              echo "* **Mwbra130 Patches**: [mwbra130/Retro-Bowl-College](https://github.com/mwbra130/Retro-Bowl-College/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
             hushfeed)
               echo "* **Hushfeed TikTok Patches**: [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
-            hxreborn)
-              echo "* **hxreborn Patches**: [hxreborn/morphe-patches](https://github.com/hxreborn/morphe-patches/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
             michii)
               echo "* **Michii Patches**: [heyymichii/michii-patches](https://github.com/heyymichii/michii-patches/releases)"
+              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
+              ;;
+            badfella)
+              echo "* **BadFella Patches**: [XBadFellaX/BadFella-Patches](https://github.com/XBadFellaX/BadFella-Patches/releases)"
+              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
+              ;;
+            amfakh)
+              echo "* **Amfakh Patches**: [amfakh/fakh-patches](https://github.com/amfakh/fakh-patches/releases)"
+              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
+              ;;
+            riky)
+              echo "* **Riky Patches**: [riky-dev/morphe-patches](https://github.com/riky-dev/morphe-patches/releases)"
+              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
+              ;;
+            patcheddit)
+              echo "* **Patcheddit Patches**: [wchill/patcheddit](https://github.com/wchill/patcheddit/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
             shini-cell)
@@ -109,11 +129,14 @@ runs:
           echo "| **Binarymend** | [binarymend/morphe-patches](https://github.com/binarymend/morphe-patches/releases) | Moon+ Reader |"
           echo "| **dh6k** | [dh6k/morphe-patches](https://github.com/dh6k/morphe-patches/releases) | Brave Browser |"
           echo "| **Heval** | [heval99/Heval-Morphe-Patches](https://github.com/heval99/Heval-Morphe-Patches/releases) | FotMob |"
-          echo "| **Hooman** | [arandomhooman/hoomans-morphe-patches](https://github.com/arandomhooman/hoomans-morphe-patches/releases) | Poweramp |"
+          echo "| **Mwbra130** | [mwbra130/Retro-Bowl-College](https://github.com/mwbra130/Retro-Bowl-College/releases) | Poweramp |"
           echo "| **Hushfeed** | [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases) | TikTok |"
-          echo "| **hxreborn** | [hxreborn/morphe-patches](https://github.com/hxreborn/morphe-patches/releases) | ReadEra |"
-          echo "| **Michii** | [heyymichii/michii-patches](https://github.com/heyymichii/michii-patches/releases) | LinkedIn |"
-          echo "| **Rushi** | [rushiranpise/morphe-patches](https://github.com/rushiranpise/morphe-patches/releases) | AdGuard, Windy, Komoot |"
+          echo "| **Michii** | [heyymichii/michii-patches](https://github.com/heyymichii/michii-patches/releases) | LinkedIn (Archive) |"
+          echo "| **BadFella** | [XBadFellaX/BadFella-Patches](https://github.com/XBadFellaX/BadFella-Patches/releases) | LinkedIn |"
+          echo "| **Rushi** | [rushiranpise/morphe-patches](https://github.com/rushiranpise/morphe-patches/releases) | AdGuard |"
+          echo "| **Amfakh** | [amfakh/fakh-patches](https://github.com/amfakh/fakh-patches/releases) | Windy |"
+          echo "| **Riky** | [riky-dev/morphe-patches](https://github.com/riky-dev/morphe-patches/releases) | Komoot |"
+          echo "| **Patcheddit** | [wchill/patcheddit](https://github.com/wchill/patcheddit/releases) | Reddit Sync |"
           echo "| **Shini** | [shini-cell/shini-morphe](https://github.com/shini-cell/shini-morphe/releases) | Nagram XF |"
           echo "| **Morphe Desktop** | [MorpheApp/morphe-desktop](https://github.com/MorpheApp/morphe-desktop/releases) | CLI & Patcher Engine |"
           echo ""
@@ -126,9 +149,9 @@ runs:
       with:
         artifacts: |
           ./release/*.apk
-        name: ${{ env.APP_NAME }}-${{ env.VARIANT }}-${{ env.APP_VERSION }}-${{ env.patch_version }}
+        name: ${{ env.RELEASE_TAG }}
         token: ${{ inputs.github_token }}
-        tag: ${{ env.APP_NAME }}-${{ env.VARIANT }}-${{ env.APP_VERSION }}-${{ env.patch_version }}
+        tag: ${{ env.RELEASE_TAG }}
         bodyFile: ${{ github.workspace }}-CHANGELOG.txt
         allowUpdates: true
 
@@ -138,14 +161,15 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.github_token }}
       run: |
-        APP_PREFIX="${APP_NAME}-${VARIANT}-"
-        KEEP_COUNT=2
+        APP_FILTER="${APP_NAME_FILTER:-$APP_NAME}"
+        KEEP_COUNT=1
 
-        echo "Cleaning up old releases for: $APP_PREFIX (keeping $KEEP_COUNT)"
+        echo "Cleaning up old releases for: $APP_FILTER (keeping $KEEP_COUNT)"
 
-        # Get all releases matching this app prefix, sorted by semantic version desc
+        # Get all releases matching this app, sorted by semantic version desc
+        # Ensure we match "^${APP_FILTER}-[0-9]" so youtube does not match youtube-music, and reddit does not match reddit-sync
         releases=$(gh release list --repo ${{ github.repository }} --limit 100 --json tagName,name \
-          | jq -r --arg prefix "$APP_PREFIX" '.[] | select(.name | startswith($prefix)) | .tagName' \
+          | jq -r --arg app "$APP_FILTER" '.[] | select(.tagName | test("^" + $app + "-[0-9]")) | .tagName' \
           | sed 's/-dev/~dev/g' \
           | sort -V -r \
           | sed 's/~dev/-dev/g')
@@ -160,4 +184,4 @@ runs:
           fi
         done
 
-        echo "Cleanup complete. Kept $KEEP_COUNT most recent releases for $APP_PREFIX"
+        echo "Cleanup complete. Kept $KEEP_COUNT most recent release for $APP_FILTER"
