@@ -132,21 +132,6 @@ photos() {
 	community_patch "gg-photos-arm64-v8a" "akash-sriram"
 }
 
-poweramp() {
-	APP_NAME="poweramp"
-	VARIANT="mwbra130"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-
-	community_dl "Retro-Bowl-College" "mwbra130"
-	get_patches_key "poweramp"
-	get_apk "com.maxmpz.audioplayer" "poweramp" "bundle"
-
-	release_exists && return 0
-
-	community_patch "poweramp" "mwbra130"
-}
-
 moonreader() {
 	APP_NAME="moonreader"
 	VARIANT="binarymend"
@@ -404,9 +389,6 @@ case "$1" in
 		;;
 	photos|google-photos)
 		photos
-		;;
-	poweramp)
-		poweramp
 		;;
 	moonreader)
 		moonreader

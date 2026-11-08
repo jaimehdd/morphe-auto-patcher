@@ -77,10 +77,6 @@ runs:
               echo "* **dh6k Patches**: [dh6k/morphe-patches](https://github.com/dh6k/morphe-patches/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
-            mwbra130)
-              echo "* **Mwbra130 Patches**: [mwbra130/Retro-Bowl-College](https://github.com/mwbra130/Retro-Bowl-College/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
             hushfeed)
               echo "* **Hushfeed TikTok Patches**: [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
@@ -129,9 +125,7 @@ runs:
           echo "| **Binarymend** | [binarymend/morphe-patches](https://github.com/binarymend/morphe-patches/releases) | Moon+ Reader |"
           echo "| **dh6k** | [dh6k/morphe-patches](https://github.com/dh6k/morphe-patches/releases) | Brave Browser |"
           echo "| **Heval** | [heval99/Heval-Morphe-Patches](https://github.com/heval99/Heval-Morphe-Patches/releases) | FotMob |"
-          echo "| **Mwbra130** | [mwbra130/Retro-Bowl-College](https://github.com/mwbra130/Retro-Bowl-College/releases) | Poweramp |"
           echo "| **Hushfeed** | [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases) | TikTok |"
-          echo "| **Michii** | [heyymichii/michii-patches](https://github.com/heyymichii/michii-patches/releases) | LinkedIn (Archive) |"
           echo "| **BadFella** | [XBadFellaX/BadFella-Patches](https://github.com/XBadFellaX/BadFella-Patches/releases) | LinkedIn |"
           echo "| **Rushi** | [rushiranpise/morphe-patches](https://github.com/rushiranpise/morphe-patches/releases) | AdGuard |"
           echo "| **Amfakh** | [amfakh/fakh-patches](https://github.com/amfakh/fakh-patches/releases) | Windy |"

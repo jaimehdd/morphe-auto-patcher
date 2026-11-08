@@ -72,7 +72,7 @@ jobs:
             echo "community_targets=[\"$dispatch_app\"]" >> $GITHUB_OUTPUT
             echo "morphe_targets=[\"$dispatch_app\"]" >> $GITHUB_OUTPUT
           else
-            echo 'community_targets=["photos","instagram","messenger","fotmob","windy","moonreader","adguard","komoot","brave","poweramp","tiktok","reddit-adobo","facebook","linkedin","nagramxf","reddit-sync"]' >> $GITHUB_OUTPUT
+            echo 'community_targets=["photos","instagram","messenger","fotmob","windy","moonreader","adguard","komoot","brave","tiktok","reddit-adobo","facebook","linkedin","nagramxf","reddit-sync"]' >> $GITHUB_OUTPUT
             echo 'morphe_targets=["youtube","youtube-music"]' >> $GITHUB_OUTPUT
           fi
 

@@ -148,22 +148,6 @@ adguard() {
 	community_patch "adguard" "rushi"
 }
 
-poweramp() {
-	APP_NAME="poweramp"
-	VARIANT="hooman"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-
-	hooman_dl
-	get_patches_key "poweramp"
-	version="build-1024-bundle-play"
-	get_apk "com.maxmpz.audioplayer" "poweramp" "bundle"
-
-	release_exists && return 0
-
-	community_patch "poweramp" "hooman"
-}
-
 morphe_dl() {
 	local patches_tag="latest"
 	[ "$use_beta" = true ] && patches_tag="prerelease"
@@ -207,9 +191,6 @@ case "$1" in
 		;;
 	adguard)
 		adguard
-		;;
-	poweramp)
-		poweramp
 		;;
 	reddit|reddit-morphe)
 		reddit

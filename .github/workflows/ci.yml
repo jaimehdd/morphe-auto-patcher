@@ -40,10 +40,6 @@ jobs:
         id: check-heval
         if: steps.check-gh.outputs.internet_error == '0'
         run: bash src/etc/ci.sh heval99/Heval-Morphe-Patches latest "fotmob.*heval.*apk"
-      - name: Check new patch mwbra130
-        id: check-mwbra130
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh mwbra130/Retro-Bowl-College latest "poweramp.*mwbra130.*apk"
       - name: Check new patch Rushi
         id: check-rushi
         if: steps.check-gh.outputs.internet_error == '0'
@@ -106,7 +102,6 @@ jobs:
           [ "${{ steps.check-binarymend.outputs.new_patch }}" = "1" ] && targets+=("moonreader")
           [ "${{ steps.check-badfella.outputs.new_patch }}" = "1" ] && targets+=("linkedin")
           [ "${{ steps.check-heval.outputs.new_patch }}" = "1" ] && targets+=("fotmob")
-          [ "${{ steps.check-mwbra130.outputs.new_patch }}" = "1" ] && targets+=("poweramp")
           [ "${{ steps.check-dh6k.outputs.new_patch }}" = "1" ] && targets+=("brave")
           [ "${{ steps.check-adobo.outputs.new_patch }}" = "1" ] && targets+=("reddit-adobo")
           [ "${{ steps.check-rushi.outputs.new_patch }}" = "1" ] && targets+=("adguard")
