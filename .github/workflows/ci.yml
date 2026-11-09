@@ -52,10 +52,6 @@ jobs:
         id: check-riky
         if: steps.check-gh.outputs.internet_error == '0'
         run: bash src/etc/ci.sh riky-dev/morphe-patches latest komoot.*riky.*apk
-      - name: Check new patch Patcheddit
-        id: check-patcheddit
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh wchill/patcheddit latest reddit-sync.*patcheddit.*apk
       - name: Check new patch Akash-Sriram
         id: check-akash-sriram
         if: steps.check-gh.outputs.internet_error == '0'
@@ -107,7 +103,6 @@ jobs:
           [ "${{ steps.check-rushi.outputs.new_patch }}" = "1" ] && targets+=("adguard")
           [ "${{ steps.check-amfakh.outputs.new_patch }}" = "1" ] && targets+=("windy")
           [ "${{ steps.check-riky.outputs.new_patch }}" = "1" ] && targets+=("komoot")
-          [ "${{ steps.check-patcheddit.outputs.new_patch }}" = "1" ] && targets+=("reddit-sync")
 
           m_targets_clean=()
           morphe_has_new=0

@@ -293,21 +293,6 @@ linkedin() {
 	community_patch "linkedin-arm64-v8a" "badfella"
 }
 
-reddit-sync() {
-	APP_NAME="reddit-sync"
-	VARIANT="patcheddit"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-
-	community_dl "patcheddit" "wchill"
-	get_patches_key "reddit-sync"
-	get_apk "com.laurencedawson.reddit_sync" "reddit-sync" "bundle"
-
-	release_exists && return 0
-
-	community_patch "reddit-sync" "patcheddit"
-}
-
 nagramxf() {
 	APP_NAME="nagramxf"
 	VARIANT="shini-cell"
@@ -413,9 +398,6 @@ case "$1" in
 		;;
 	linkedin|linkedin-badfella|linkedin-michii)
 		linkedin
-		;;
-	sync|reddit-sync)
-		reddit-sync
 		;;
 	nagramxf|nagramxf-shini-cell)
 		nagramxf

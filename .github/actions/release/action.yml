@@ -97,10 +97,6 @@ runs:
               echo "* **Riky Patches**: [riky-dev/morphe-patches](https://github.com/riky-dev/morphe-patches/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
-            patcheddit)
-              echo "* **Patcheddit Patches**: [wchill/patcheddit](https://github.com/wchill/patcheddit/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
             shini-cell)
               echo "* **Shini Morphe Patches**: [shini-cell/shini-morphe](https://github.com/shini-cell/shini-morphe/releases)"
               echo "* **NagramXF Upstream**: [Keeperorowner/NagramXF](https://github.com/Keeperorowner/NagramXF/releases)"
@@ -130,7 +126,6 @@ runs:
           echo "| **Rushi** | [rushiranpise/morphe-patches](https://github.com/rushiranpise/morphe-patches/releases) | AdGuard |"
           echo "| **Amfakh** | [amfakh/fakh-patches](https://github.com/amfakh/fakh-patches/releases) | Windy |"
           echo "| **Riky** | [riky-dev/morphe-patches](https://github.com/riky-dev/morphe-patches/releases) | Komoot |"
-          echo "| **Patcheddit** | [wchill/patcheddit](https://github.com/wchill/patcheddit/releases) | Reddit Sync |"
           echo "| **Shini** | [shini-cell/shini-morphe](https://github.com/shini-cell/shini-morphe/releases) | Nagram XF |"
           echo "| **Morphe Desktop** | [MorpheApp/morphe-desktop](https://github.com/MorpheApp/morphe-desktop/releases) | CLI & Patcher Engine |"
           echo ""
@@ -161,7 +156,7 @@ runs:
         echo "Cleaning up old releases for: $APP_FILTER (keeping $KEEP_COUNT)"
 
         # Get all releases matching this app, sorted by semantic version desc
-        # Ensure we match "^${APP_FILTER}-[0-9]" so youtube does not match youtube-music, and reddit does not match reddit-sync
+        # Ensure we match "^${APP_FILTER}-[0-9]" so youtube does not match youtube-music
         releases=$(gh release list --repo ${{ github.repository }} --limit 100 --json tagName,name \
           | jq -r --arg app "$APP_FILTER" '.[] | select(.tagName | test("^" + $app + "-[0-9]")) | .tagName' \
           | sed 's/-dev/~dev/g' \

@@ -159,10 +159,6 @@
     "com.flyersoft.moonreader": {
       "list_url": "https://www.apkmirror.com/uploads/?appcategory=moon-reader",
       "example_url": "https://www.apkmirror.com/apk/moon/moon-reader/moon-reader-9-3-release/"
-    },
-    "com.laurencedawson.reddit_sync": {
-      "list_url": "https://www.apkmirror.com/uploads/?appcategory=sync-for-reddit",
-      "example_url": "https://www.apkmirror.com/apk/red-apps-ltd/sync-for-reddit/sync-for-reddit-v23-06-30-13-39-release/"
     }
   },
   "uptodown": {
@@ -201,9 +197,6 @@
     },
     "com.zhiliaoapp.musically": {
       "url": "https://tiktok.en.uptodown.com/android"
-    },
-    "com.laurencedawson.reddit_sync": {
-      "url": "https://sync-for-reddit.en.uptodown.com/android"
     }
   }
 }
