@@ -355,6 +355,133 @@ nagramxf() {
 }
 nagramxf-shini-cell() { nagramxf; }
 
+_find_android_build_tool() {
+	local tool="$1"
+	if command -v "$tool" >/dev/null 2>&1; then
+		command -v "$tool"
+		return 0
+	fi
+	local sdk_root
+	for sdk_root in "$ANDROID_HOME" "$ANDROID_SDK_ROOT" "/usr/local/lib/android/sdk"; do
+		[ -n "$sdk_root" ] && [ -d "$sdk_root/build-tools" ] || continue
+		local found
+		found=$(find "$sdk_root/build-tools" -maxdepth 2 -type f -name "$tool" 2>/dev/null | sort -V | tail -n1)
+		if [ -n "$found" ] && [ -x "$found" ]; then
+			printf '%s' "$found"
+			return 0
+		fi
+	done
+	return 1
+}
+
+niagram() {
+	APP_NAME="niagram"
+	VARIANT="premium-icon"
+	[ -n "$GITHUB_ENV" ] && echo "APP_NAME=$APP_NAME" >> "$GITHUB_ENV"
+	[ -n "$GITHUB_ENV" ] && echo "VARIANT=$VARIANT" >> "$GITHUB_ENV"
+
+	local auth_header=()
+	[ -n "$GITHUB_TOKEN" ] && auth_header=(-H "Authorization: Bearer $GITHUB_TOKEN")
+	local releases_json
+	if command -v curl >/dev/null 2>&1; then
+		releases_json=$(curl -sSL "${auth_header[@]}" "https://api.github.com/repos/HSSkyBoy/Niagram/releases?per_page=10")
+	else
+		local auth_wget=()
+		[ -n "$GITHUB_TOKEN" ] && auth_wget=(--header="Authorization: Bearer $GITHUB_TOKEN")
+		releases_json=$(wget -qO- "${auth_wget[@]}" "https://api.github.com/repos/HSSkyBoy/Niagram/releases?per_page=10")
+	fi
+
+	local release_filter='.[]'
+	if [ "$use_beta" = false ]; then
+		release_filter='.[] | select(.prerelease == false)'
+	fi
+
+	local release_tag apk_url asset_name
+	release_tag=$(echo "$releases_json" | jq -r "first($release_filter | select(.assets[]?.name | test(\"-arm64-v8a\\\\.apk$\"))) | .tag_name")
+	apk_url=$(echo "$releases_json" | jq -r "first($release_filter | .assets[] | select(.name | test(\"-arm64-v8a\\\\.apk$\"))) | .browser_download_url")
+	asset_name=$(echo "$releases_json" | jq -r "first($release_filter | .assets[] | select(.name | test(\"-arm64-v8a\\\\.apk$\"))) | .name")
+
+	if [[ -z "$apk_url" || "$apk_url" == "null" ]]; then
+		red_log "[-] Could not find Niagram arm64-v8a.apk in HSSkyBoy/Niagram releases"
+		exit 1
+	fi
+
+	if [[ "$asset_name" =~ Niagram-v([0-9]+(\.[0-9]+)+) ]]; then
+		version="${BASH_REMATCH[1]}"
+	else
+		version="$release_tag"
+	fi
+	patch_version="${release_tag#v}"
+	[[ -z "$patch_version" || "$patch_version" == "null" ]] && patch_version="1.0.0"
+
+	export version patch_version
+	export_app_version "$version"
+	[ -n "$GITHUB_ENV" ] && echo "patch_version=$patch_version" >> "$GITHUB_ENV"
+	green_log "[+] Target Niagram version: $version (build $patch_version, $asset_name)"
+
+	release_exists && return 0
+
+	mkdir -p ./download ./release
+	green_log "[+] Downloading $asset_name from HSSkyBoy/Niagram"
+	if command -v curl >/dev/null 2>&1; then
+		curl -sSL -o "./download/niagram-arm64-v8a.apk" "$apk_url"
+	else
+		wget -q -O "./download/niagram-arm64-v8a.apk" "$apk_url"
+	fi
+
+	ensure_apkeditor
+	local dec_dir="./download/niagram-dec"
+	local unaligned_apk="./download/niagram-arm64-v8a-unaligned.apk"
+	local aligned_apk="./download/niagram-arm64-v8a-aligned.apk"
+	local output_apk="./release/niagram-arm64-v8a-${VARIANT}.apk"
+
+	green_log "[+] Decoding Niagram resources with APKEditor"
+	if ! java -jar "$APKEditor" d -f -dex -t xml -i "./download/niagram-arm64-v8a.apk" -o "$dec_dir"; then
+		red_log "[-] APKEditor decode failed for Niagram"
+		exit 1
+	fi
+
+	green_log "[+] Applying Telegram Premium Star launcher & notification branding"
+	if ! python3 ./src/build/helper/patch_niagram_branding.py "$dec_dir" "./src/patches/niagram/icons"; then
+		red_log "[-] Failed to patch Niagram branding resources"
+		exit 1
+	fi
+
+	green_log "[+] Rebuilding Niagram APK with APKEditor"
+	if ! java -jar "$APKEditor" b -f -i "$dec_dir" -o "$unaligned_apk"; then
+		red_log "[-] APKEditor rebuild failed for Niagram"
+		exit 1
+	fi
+
+	local zipalign_bin apksigner_bin
+	if ! zipalign_bin=$(_find_android_build_tool "zipalign"); then
+		red_log "[-] zipalign not found in PATH or Android SDK build-tools"
+		exit 1
+	fi
+	if ! apksigner_bin=$(_find_android_build_tool "apksigner"); then
+		red_log "[-] apksigner not found in PATH or Android SDK build-tools"
+		exit 1
+	fi
+
+	green_log "[+] Aligning and signing $output_apk"
+	"$zipalign_bin" -p -f 4 "$unaligned_apk" "$aligned_apk"
+	if ! "$apksigner_bin" sign \
+		--ks ./src/lspatch-signing.p12 \
+		--ks-type PKCS12 \
+		--ks-pass pass:morphe \
+		--ks-key-alias fiorenmas \
+		--key-pass pass:morphe \
+		--out "$output_apk" \
+		"$aligned_apk"; then
+		red_log "[-] apksigner failed for Niagram"
+		exit 1
+	fi
+	"$apksigner_bin" verify "$output_apk"
+	rm -rf "$dec_dir" "$unaligned_apk" "$aligned_apk"
+	green_log "[+] Built $output_apk"
+}
+niagram-premium-icon() { niagram; }
+
 # ==============================================================================
 # Dispatcher
 # ==============================================================================
@@ -401,5 +528,8 @@ case "$1" in
 		;;
 	nagramxf|nagramxf-shini-cell)
 		nagramxf
+		;;
+	niagram|niagram-premium-icon)
+		niagram
 		;;
 esac

@@ -101,6 +101,10 @@ runs:
               echo "* **Shini Morphe Patches**: [shini-cell/shini-morphe](https://github.com/shini-cell/shini-morphe/releases)"
               echo "* **NagramXF Upstream**: [Keeperorowner/NagramXF](https://github.com/Keeperorowner/NagramXF/releases)"
               ;;
+            premium-icon)
+              echo "* **Niagram Upstream**: [HSSkyBoy/Niagram](https://github.com/HSSkyBoy/Niagram/releases)"
+              echo "* **Resource Patching**: [REAndroid/APKEditor](https://github.com/REAndroid/APKEditor/releases) (Telegram Premium Star launcher + notification icons)"
+              ;;
             *)
               echo "* **Morphe Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
@@ -127,6 +131,7 @@ runs:
           echo "| **Amfakh** | [amfakh/fakh-patches](https://github.com/amfakh/fakh-patches/releases) | Windy |"
           echo "| **Riky** | [riky-dev/morphe-patches](https://github.com/riky-dev/morphe-patches/releases) | Komoot |"
           echo "| **Shini** | [shini-cell/shini-morphe](https://github.com/shini-cell/shini-morphe/releases) | Nagram XF |"
+          echo "| **Niagram** | [HSSkyBoy/Niagram](https://github.com/HSSkyBoy/Niagram/releases) | Niagram (Premium Star Branding) |"
           echo "| **Morphe Desktop** | [MorpheApp/morphe-desktop](https://github.com/MorpheApp/morphe-desktop/releases) | CLI & Patcher Engine |"
           echo ""
           echo "</details>"
