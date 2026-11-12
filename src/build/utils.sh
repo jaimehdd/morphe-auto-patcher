@@ -429,8 +429,8 @@ auto_include_community_patches() {
 		patch_name="$(echo "$patch_name" | xargs)"
 		[[ -z "$patch_name" ]] && continue
 
-		# Exclusive exclusions: x86 architecture or Clone / package rename
-		if [[ "$patch_name" =~ [xX]86 ]] || [[ "$patch_name" =~ [Cc]lone ]] || [[ "$patch_name" =~ [Cc]hange[[:space:]]+package[[:space:]]+name ]] || [[ "$patch_name" =~ [Ii]nstall[[:space:]]+next[[:space:]]+to ]]; then
+		# Exclusive exclusions: x86 architecture, Clone / package rename, or GmsCore support
+		if [[ "$patch_name" =~ [xX]86 ]] || [[ "$patch_name" =~ [Cc]lone ]] || [[ "$patch_name" =~ [Cc]hange[[:space:]]+package[[:space:]]+name ]] || [[ "$patch_name" =~ [Ii]nstall[[:space:]]+next[[:space:]]+to ]] || [[ "$patch_name" =~ [Gg]ms[Cc]ore ]]; then
 			yellow_log "[-] Auto-excluding (exclusive rule): $patch_name"
 			((excluded_count++))
 			continue
