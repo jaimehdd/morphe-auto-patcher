@@ -112,13 +112,16 @@ release_exists() {
 		tag_prefix="${APP_NAME}-hush"
 	fi
 	local release_tag="${tag_prefix}-${app_version}-${patch_version}"
+	if [[ "${OMIT_PATCH_VERSION:-false}" == "true" ]]; then
+		release_tag="${tag_prefix}-${app_version}"
+	fi
 
 	if [[ "${force_patch:-false}" == "true" ]]; then
 		green_log "[+] Force patch enabled, skipping existing release check"
 		return 1
 	fi
 
-	if [[ -z "$APP_NAME" || -z "$VARIANT" || -z "$app_version" || -z "$patch_version" ]]; then
+	if [[ -z "$APP_NAME" || -z "$VARIANT" || -z "$app_version" ]] || [[ "${OMIT_PATCH_VERSION:-false}" != "true" && -z "$patch_version" ]]; then
 		red_log "[-] Missing release metadata, patching will continue"
 		return 1
 	fi
@@ -283,7 +286,7 @@ get_patches_key() {
 			if [[ "$line1" =~ ^[[:space:]]*#[[:space:]]*\[?([Mm]orphe|[Uu]niversal) ]]; then
 				current_section="morphe"
 				continue
-			elif [[ "$line1" =~ ^[[:space:]]*#[[:space:]]*\[?([Aa]dobo|[Cc]ommunity|[Pp]iko|[Rr]ushi|[Bb]inarymend|[Hh]oo-dles|[Hh]ooman|[Dd]h6k|[Tt]ik[Tt]ok|[Aa]ndrew|[Pp]rathxm|[Hh]ushfeed|[Hh]ush[Ff]acebook|[Hh]ush[Gg]ram|[Hh]ush[Mm]essenger|[Aa]kash-[Ss]riram|[Hh]xreborn|[Mm]ichii|[Ss]hini|[Hh]eval|[Mm]wbra130|[Bb]adfella|[Aa]mfakh|[Rr]iky|[Pp]atcheddit) ]]; then
+			elif [[ "$line1" =~ ^[[:space:]]*#[[:space:]]*\[?([Aa]dobo|[Cc]ommunity|[Pp]iko|[Rr]ushi|[Bb]inarymend|[Hh]oo-dles|[Hh]ooman|[Dd]h6k|[Kk]veld9|[Tt]ik[Tt]ok|[Aa]ndrew|[Pp]rathxm|[Hh]ushfeed|[Hh]ush[Ff]acebook|[Hh]ush[Gg]ram|[Hh]ush[Mm]essenger|[Aa]kash-[Ss]riram|[Hh]xreborn|[Mm]ichii|[Ss]hini|[Hh]eval|[Mm]wbra130|[Bb]adfella|[Aa]mfakh|[Rr]iky|[Pp]atcheddit) ]]; then
 				current_section="community"
 				continue
 			elif [[ "$line1" =~ ^[[:space:]]*# ]]; then
@@ -309,7 +312,7 @@ get_patches_key() {
 			if [[ "$line2" =~ ^[[:space:]]*#[[:space:]]*\[?([Mm]orphe|[Uu]niversal) ]]; then
 				current_section="morphe"
 				continue
-			elif [[ "$line2" =~ ^[[:space:]]*#[[:space:]]*\[?([Aa]dobo|[Cc]ommunity|[Pp]iko|[Rr]ushi|[Bb]inarymend|[Hh]oo-dles|[Hh]ooman|[Dd]h6k|[Tt]ik[Tt]ok|[Aa]ndrew|[Pp]rathxm|[Hh]ushfeed|[Hh]ush[Ff]acebook|[Hh]ush[Gg]ram|[Hh]ush[Mm]essenger|[Aa]kash-[Ss]riram|[Hh]xreborn|[Mm]ichii|[Ss]hini|[Hh]eval|[Mm]wbra130|[Bb]adfella|[Aa]mfakh|[Rr]iky|[Pp]atcheddit) ]]; then
+			elif [[ "$line2" =~ ^[[:space:]]*#[[:space:]]*\[?([Aa]dobo|[Cc]ommunity|[Pp]iko|[Rr]ushi|[Bb]inarymend|[Hh]oo-dles|[Hh]ooman|[Dd]h6k|[Kk]veld9|[Tt]ik[Tt]ok|[Aa]ndrew|[Pp]rathxm|[Hh]ushfeed|[Hh]ush[Ff]acebook|[Hh]ush[Gg]ram|[Hh]ush[Mm]essenger|[Aa]kash-[Ss]riram|[Hh]xreborn|[Mm]ichii|[Ss]hini|[Hh]eval|[Mm]wbra130|[Bb]adfella|[Aa]mfakh|[Rr]iky|[Pp]atcheddit) ]]; then
 				current_section="community"
 				continue
 			elif [[ "$line2" =~ ^[[:space:]]*# ]]; then

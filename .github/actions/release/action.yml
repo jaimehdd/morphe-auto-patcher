@@ -24,6 +24,9 @@ runs:
           tag_prefix="${APP_NAME}-hush"
         fi
         release_tag="${tag_prefix}-${APP_VERSION}-${patch_version}"
+        if [[ "${OMIT_PATCH_VERSION:-false}" == "true" ]]; then
+          release_tag="${tag_prefix}-${APP_VERSION}"
+        fi
         echo "RELEASE_TAG=${release_tag}" >> $GITHUB_ENV
         echo "APP_NAME_FILTER=${tag_prefix}" >> $GITHUB_ENV
 
@@ -69,12 +72,8 @@ runs:
               echo "* **Heval Patches**: [heval99/Heval-Morphe-Patches](https://github.com/heval99/Heval-Morphe-Patches/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
-            binarymend)
-              echo "* **Binarymend Patches**: [binarymend/morphe-patches](https://github.com/binarymend/morphe-patches/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            dh6k)
-              echo "* **dh6k Patches**: [dh6k/morphe-patches](https://github.com/dh6k/morphe-patches/releases)"
+            kveld9)
+              echo "* **kveld9 Patches**: [kveld9/kveld-morphe-patches](https://github.com/kveld9/kveld-morphe-patches/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
             hushfeed)
@@ -97,10 +96,6 @@ runs:
               echo "* **Riky Patches**: [riky-dev/morphe-patches](https://github.com/riky-dev/morphe-patches/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
-            shini-cell)
-              echo "* **Shini Morphe Patches**: [shini-cell/shini-morphe](https://github.com/shini-cell/shini-morphe/releases)"
-              echo "* **NagramXF Upstream**: [Keeperorowner/NagramXF](https://github.com/Keeperorowner/NagramXF/releases)"
-              ;;
             premium-icon)
               echo "* **Niagram Upstream**: [HSSkyBoy/Niagram](https://github.com/HSSkyBoy/Niagram/releases)"
               echo "* **Resource Patching**: [REAndroid/APKEditor](https://github.com/REAndroid/APKEditor/releases) (Telegram Premium Star launcher + notification icons)"
@@ -122,15 +117,13 @@ runs:
           echo "| **HushGram** | [SysAdminDoc/HushGram](https://github.com/SysAdminDoc/HushGram/releases) | Instagram |"
           echo "| **HushMessenger** | [SysAdminDoc/HushMessenger](https://github.com/SysAdminDoc/HushMessenger/releases) | Messenger |"
           echo "| **Akash Sriram** | [Akash-Sriram/morphe-google-photos](https://github.com/Akash-Sriram/morphe-google-photos/releases) | Google Photos |"
-          echo "| **Binarymend** | [binarymend/morphe-patches](https://github.com/binarymend/morphe-patches/releases) | Moon+ Reader |"
-          echo "| **dh6k** | [dh6k/morphe-patches](https://github.com/dh6k/morphe-patches/releases) | Brave Browser |"
+          echo "| **kveld9** | [kveld9/kveld-morphe-patches](https://github.com/kveld9/kveld-morphe-patches/releases) | Brave Browser |"
           echo "| **Heval** | [heval99/Heval-Morphe-Patches](https://github.com/heval99/Heval-Morphe-Patches/releases) | FotMob |"
           echo "| **Hushfeed** | [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases) | TikTok |"
           echo "| **BadFella** | [XBadFellaX/BadFella-Patches](https://github.com/XBadFellaX/BadFella-Patches/releases) | LinkedIn |"
           echo "| **Rushi** | [rushiranpise/morphe-patches](https://github.com/rushiranpise/morphe-patches/releases) | AdGuard |"
           echo "| **Amfakh** | [amfakh/fakh-patches](https://github.com/amfakh/fakh-patches/releases) | Windy |"
           echo "| **Riky** | [riky-dev/morphe-patches](https://github.com/riky-dev/morphe-patches/releases) | Komoot |"
-          echo "| **Shini** | [shini-cell/shini-morphe](https://github.com/shini-cell/shini-morphe/releases) | Nagram XF |"
           echo "| **Niagram** | [HSSkyBoy/Niagram](https://github.com/HSSkyBoy/Niagram/releases) | Niagram (Premium Star Branding) |"
           echo "| **Morphe Desktop** | [MorpheApp/morphe-desktop](https://github.com/MorpheApp/morphe-desktop/releases) | CLI & Patcher Engine |"
           echo ""
