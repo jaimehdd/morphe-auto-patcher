@@ -177,36 +177,53 @@ komoot() {
 
 adguard() {
 	APP_NAME="adguard"
-	VARIANT="rushi"
+	VARIANT="ginarena"
 	OMIT_PATCH_VERSION="true"
 	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
 	echo "OMIT_PATCH_VERSION=$OMIT_PATCH_VERSION" >> $GITHUB_ENV
 
-	community_dl "morphe-patches" "rushiranpise"
+	community_dl "GinArena-patch" "ginDoki19"
 	get_patches_key "adguard"
 	get_apk "com.adguard.android" "adguard" "apk"
 
 	release_exists && return 0
 
-	community_patch "adguard" "rushi"
+	community_patch "adguard" "ginarena"
 }
 
 brave() {
 	APP_NAME="brave"
-	VARIANT="kveld9"
+	VARIANT="proteus"
 	OMIT_PATCH_VERSION="true"
 	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
 	echo "OMIT_PATCH_VERSION=$OMIT_PATCH_VERSION" >> $GITHUB_ENV
 
-	community_dl "kveld-morphe-patches" "kveld9"
+	community_dl "Proteus-Patches" "ineednotitle"
 	get_patches_key "brave"
 	get_apk "com.brave.browser" "brave-arm64-v8a" "bundle" "arm64-v8a"
 
 	release_exists && return 0
 
-	community_patch "brave-arm64-v8a" "kveld9"
+	community_patch "brave-arm64-v8a" "proteus"
+}
+
+booking() {
+	APP_NAME="booking"
+	VARIANT="jofslash"
+	OMIT_PATCH_VERSION="true"
+	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
+	echo "OMIT_PATCH_VERSION=$OMIT_PATCH_VERSION" >> $GITHUB_ENV
+
+	community_dl "morphe-patches" "JoFSlash"
+	get_patches_key "booking"
+	get_apk "com.booking" "booking-arm64-v8a" "bundle"
+
+	release_exists && return 0
+
+	community_patch "booking-arm64-v8a" "jofslash"
 }
 
 windy() {
@@ -448,6 +465,9 @@ case "$1" in
 		;;
 	brave)
 		brave
+		;;
+	booking|booking-jofslash)
+		booking
 		;;
 	windy)
 		windy

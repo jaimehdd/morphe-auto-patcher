@@ -44,6 +44,10 @@
       "list_url": "https://www.apkmirror.com/uploads/?appcategory=bilibili",
       "example_url": "https://www.apkmirror.com/apk/bilibili/bilibili/bilibili-3-20-2-release/"
     },
+    "com.booking": {
+      "list_url": "https://www.apkmirror.com/uploads/?appcategory=booking-com-hotel-reservations",
+      "example_url": "https://www.apkmirror.com/apk/booking-com-hotel-reservations/booking-com-hotel-reservations/booking-com-hotels-travel-71-1-release/"
+    },
     "com.discord": {
       "list_url": "https://www.apkmirror.com/uploads/?appcategory=discord-chat-for-gamers",
       "example_url": "https://www.apkmirror.com/apk/discord/discord-chat-for-gamers/discord-talk-play-hang-out-327-12-stable-release/"

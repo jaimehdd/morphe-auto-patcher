@@ -36,10 +36,10 @@ jobs:
         id: check-heval
         if: steps.check-gh.outputs.internet_error == '0'
         run: bash src/etc/ci.sh heval99/Heval-Morphe-Patches latest "fotmob.*heval.*apk"
-      - name: Check new patch Rushi
-        id: check-rushi
+      - name: Check new patch GinArena
+        id: check-ginarena
         if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh rushiranpise/morphe-patches latest adguard.*rushi.*apk
+        run: bash src/etc/ci.sh ginDoki19/GinArena-patch latest adguard.*ginarena.*apk
       - name: Check new patch Amfakh
         id: check-amfakh
         if: steps.check-gh.outputs.internet_error == '0'
@@ -52,10 +52,14 @@ jobs:
         id: check-akash-sriram
         if: steps.check-gh.outputs.internet_error == '0'
         run: bash src/etc/ci.sh Akash-Sriram/morphe-google-photos latest "(google-photos|gg-photos).*akash-sriram.*apk"
-      - name: Check new patch kveld9
-        id: check-kveld9
+      - name: Check new patch Proteus
+        id: check-proteus
         if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh kveld9/kveld-morphe-patches latest brave.*kveld9.*apk
+        run: bash src/etc/ci.sh ineednotitle/Proteus-Patches latest brave.*proteus.*apk
+      - name: Check new patch JoFSlash
+        id: check-jofslash
+        if: steps.check-gh.outputs.internet_error == '0'
+        run: bash src/etc/ci.sh JoFSlash/morphe-patches latest booking.*jofslash.*apk
       - name: Check new patch Hushfeed
         id: check-hushfeed
         if: steps.check-gh.outputs.internet_error == '0'
@@ -93,9 +97,10 @@ jobs:
           [ "${{ steps.check-akash-sriram.outputs.new_patch }}" = "1" ] && targets+=("photos")
           [ "${{ steps.check-badfella.outputs.new_patch }}" = "1" ] && targets+=("linkedin")
           [ "${{ steps.check-heval.outputs.new_patch }}" = "1" ] && targets+=("fotmob")
-          [ "${{ steps.check-kveld9.outputs.new_patch }}" = "1" ] && targets+=("brave")
+          [ "${{ steps.check-proteus.outputs.new_patch }}" = "1" ] && targets+=("brave")
+          [ "${{ steps.check-jofslash.outputs.new_patch }}" = "1" ] && targets+=("booking")
           [ "${{ steps.check-adobo.outputs.new_patch }}" = "1" ] && targets+=("reddit-adobo")
-          [ "${{ steps.check-rushi.outputs.new_patch }}" = "1" ] && targets+=("adguard")
+          [ "${{ steps.check-ginarena.outputs.new_patch }}" = "1" ] && targets+=("adguard")
           [ "${{ steps.check-amfakh.outputs.new_patch }}" = "1" ] && targets+=("windy")
           [ "${{ steps.check-riky.outputs.new_patch }}" = "1" ] && targets+=("komoot")
 

@@ -64,16 +64,20 @@ runs:
               echo "* **Akash Sriram Google Photos Patches**: [Akash-Sriram/morphe-google-photos](https://github.com/Akash-Sriram/morphe-google-photos/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
-            rushi)
-              echo "* **Rushi Patches**: [rushiranpise/morphe-patches](https://github.com/rushiranpise/morphe-patches/releases)"
+            ginarena)
+              echo "* **GinArena Patches**: [ginDoki19/GinArena-patch](https://github.com/ginDoki19/GinArena-patch/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
             heval)
               echo "* **Heval Patches**: [heval99/Heval-Morphe-Patches](https://github.com/heval99/Heval-Morphe-Patches/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
-            kveld9)
-              echo "* **kveld9 Patches**: [kveld9/kveld-morphe-patches](https://github.com/kveld9/kveld-morphe-patches/releases)"
+            proteus)
+              echo "* **Proteus Patches**: [ineednotitle/Proteus-Patches](https://github.com/ineednotitle/Proteus-Patches/releases)"
+              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
+              ;;
+            jofslash)
+              echo "* **JoFSlash Patches**: [JoFSlash/morphe-patches](https://github.com/JoFSlash/morphe-patches/releases)"
               echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
               ;;
             hushfeed)
@@ -117,11 +121,12 @@ runs:
           echo "| **HushGram** | [SysAdminDoc/HushGram](https://github.com/SysAdminDoc/HushGram/releases) | Instagram |"
           echo "| **HushMessenger** | [SysAdminDoc/HushMessenger](https://github.com/SysAdminDoc/HushMessenger/releases) | Messenger |"
           echo "| **Akash Sriram** | [Akash-Sriram/morphe-google-photos](https://github.com/Akash-Sriram/morphe-google-photos/releases) | Google Photos |"
-          echo "| **kveld9** | [kveld9/kveld-morphe-patches](https://github.com/kveld9/kveld-morphe-patches/releases) | Brave Browser |"
+          echo "| **Proteus** | [ineednotitle/Proteus-Patches](https://github.com/ineednotitle/Proteus-Patches/releases) | Brave Browser |"
+          echo "| **JoFSlash** | [JoFSlash/morphe-patches](https://github.com/JoFSlash/morphe-patches/releases) | Booking.com |"
           echo "| **Heval** | [heval99/Heval-Morphe-Patches](https://github.com/heval99/Heval-Morphe-Patches/releases) | FotMob |"
           echo "| **Hushfeed** | [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases) | TikTok |"
           echo "| **BadFella** | [XBadFellaX/BadFella-Patches](https://github.com/XBadFellaX/BadFella-Patches/releases) | LinkedIn |"
-          echo "| **Rushi** | [rushiranpise/morphe-patches](https://github.com/rushiranpise/morphe-patches/releases) | AdGuard |"
+          echo "| **GinArena** | [ginDoki19/GinArena-patch](https://github.com/ginDoki19/GinArena-patch/releases) | AdGuard |"
           echo "| **Amfakh** | [amfakh/fakh-patches](https://github.com/amfakh/fakh-patches/releases) | Windy |"
           echo "| **Riky** | [riky-dev/morphe-patches](https://github.com/riky-dev/morphe-patches/releases) | Komoot |"
           echo "| **Niagram** | [HSSkyBoy/Niagram](https://github.com/HSSkyBoy/Niagram/releases) | Niagram (Premium Star Branding) |"
