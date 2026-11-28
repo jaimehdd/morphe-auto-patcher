@@ -1,7 +1,8 @@
 #!/bin/bash
-# Morphe Community build
+# Morphe Community build (manifest-driven via src/targets.json)
 source ./src/build/utils.sh
 
+TARGETS_MANIFEST="./src/targets.json"
 use_beta="${use_beta:-false}"
 
 if [ "$use_beta" = false ]; then
@@ -13,7 +14,8 @@ fi
 separate_morphe_universal_patches=true
 
 morphe_universal_dl() {
-	dl_gh "morphe-patches" "MorpheApp" "$tag" "true"
+	local patches_tag="${1:-$tag}"
+	dl_gh "morphe-patches" "MorpheApp" "$patches_tag" "true"
 	for patches_file in patches-*.mpp; do
 		[ -e "$patches_file" ] || continue
 		mv "$patches_file" "morphe-universal-$patches_file.disabled"
@@ -26,286 +28,176 @@ community_dl() {
 	local custom_tag="${3:-$tag}"
 
 	dl_gh "morphe-desktop" "MorpheApp" "$tag" "true"
-	morphe_universal_dl
 	dl_gh "$repo" "$org" "$custom_tag"
 }
 
 community_patch() {
 	patch "$1" "$2" "morphe"
 	if [ "${detachPlayStoreUpdates:-false}" = true ]; then
+		if ! ls morphe-universal-*.mpp.disabled >/dev/null 2>&1; then
+			morphe_universal_dl
+		fi
 		morphe_disable_play_store_updates "$1" "$2"
 	fi
 	unset detachPlayStoreUpdates
 }
 
-# ==============================================================================
-# Group 1: SysAdminDoc Hush Suite
-# ==============================================================================
-
-facebook() {
-	APP_NAME="facebook"
-	VARIANT="hushfacebook"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-
-	community_dl "HushFacebook" "SysAdminDoc"
-	get_patches_key "facebook"
-	get_apk "com.facebook.katana" "facebook-arm64-v8a" "bundle" "arm64-v8a" "320-640dpi" "Android 11+"
-
-	release_exists && return 0
-
-	auto_include_community_patches "com.facebook.katana" "facebook"
-	detachPlayStoreUpdates=true
-	community_patch "facebook-arm64-v8a" "hushfacebook"
-}
-facebook-hushfacebook() { facebook; }
-
-messenger() {
-	APP_NAME="messenger"
-	VARIANT="hushmessenger"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-
-	community_dl "HushMessenger" "SysAdminDoc"
-	get_patches_key "messenger"
-	get_apk "com.facebook.orca" "messenger-arm64-v8a" "apk" "arm64-v8a" "nodpi" "Android 9.0+"
-
-	release_exists && return 0
-
-	auto_include_community_patches "com.facebook.orca" "messenger"
-	detachPlayStoreUpdates=true
-	community_patch "messenger-arm64-v8a" "hushmessenger"
-}
-messenger-hushmessenger() { messenger; }
-
-instagram() {
-	APP_NAME="instagram"
-	VARIANT="hushgram"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-
-	community_dl "HushGram" "SysAdminDoc"
-	get_patches_key "instagram"
-	get_apk "com.instagram.android" "instagram-arm64-v8a" "bundle" "arm64-v8a" "480-640dpi" "Android 9.0+"
-
-	release_exists && return 0
-
-	auto_include_community_patches "com.instagram.android" "instagram"
-	detachPlayStoreUpdates=true
-	community_patch "instagram-arm64-v8a" "hushgram"
-}
-instagram-hushgram() { instagram; }
-
-tiktok() {
-	APP_NAME="tiktok"
-	VARIANT="hushfeed"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-
-	community_dl "hushfeed" "SysAdminDoc"
-	get_patches_key "tiktok"
-	get_apk "com.zhiliaoapp.musically" "tiktok-arm64-v8a" "apk" "arm64-v8a" || \
-	get_apk_uptodown "com.zhiliaoapp.musically" "tiktok-arm64-v8a" "apk"
-
-	release_exists && return 0
-
-	auto_include_community_patches "com.zhiliaoapp.musically" "tiktok"
-	community_patch "tiktok-arm64-v8a" "hushfeed"
+_download_target_apk() {
+	local pkg="$1" apk_name="$2" apk_type="$3" arch="$4" dpi="$5" minver="$6" fallback_uptodown="$7"
+	if [[ "$fallback_uptodown" == "true" ]]; then
+		get_apk "$pkg" "$apk_name" "$apk_type" "$arch" "$dpi" "$minver" || \
+		get_apk_uptodown "$pkg" "$apk_name" "$apk_type"
+	else
+		get_apk "$pkg" "$apk_name" "$apk_type" "$arch" "$dpi" "$minver"
+	fi
 }
 
-# ==============================================================================
-# Group 2: Media, Audio & Photos
-# ==============================================================================
+# Reusable single-bundle community app builder
+build_community_app() {
+	local target_json="$1"
 
-photos() {
-	APP_NAME="google-photos"
-	VARIANT="akash-sriram"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
+	APP_NAME=$(jq -r '.app_name' <<< "$target_json")
+	VARIANT=$(jq -r '.variant' <<< "$target_json")
+	OMIT_PATCH_VERSION=$(jq -r 'if .omit_patch_version then "true" else "false" end' <<< "$target_json")
+	local pkg patches_dir auto_discover force_detach
+	pkg=$(jq -r '.package' <<< "$target_json")
+	patches_dir=$(jq -r '.patches_dir' <<< "$target_json")
+	auto_discover=$(jq -r 'if .auto_discover then "true" else "false" end' <<< "$target_json")
+	force_detach=$(jq -r 'if .detach_play_store then "true" else "false" end' <<< "$target_json")
 
-	community_dl "morphe-google-photos" "Akash-Sriram"
-	get_patches_key "gg-photos"
-	get_apk "com.google.android.apps.photos" "gg-photos-arm64-v8a" "apk"
+	local src_repo src_owner src_name src_tag
+	src_repo=$(jq -r '.sources[0].repo' <<< "$target_json")
+	src_owner="${src_repo%%/*}"
+	src_name="${src_repo#*/}"
+	src_tag=$(jq -r '.sources[0].tag_mode // ""' <<< "$target_json")
+	[[ "$use_beta" == "true" || -z "$src_tag" ]] && src_tag="$tag"
 
-	release_exists && return 0
+	local apk_name apk_type arch dpi minver fallback_uptodown
+	apk_name=$(jq -r '.apk.name' <<< "$target_json")
+	apk_type=$(jq -r '.apk.type // "apk"' <<< "$target_json")
+	arch=$(jq -r '.apk.arch // ""' <<< "$target_json")
+	dpi=$(jq -r '.apk.dpi // ""' <<< "$target_json")
+	minver=$(jq -r '.apk.minver // ""' <<< "$target_json")
+	fallback_uptodown=$(jq -r 'if .apk.fallback_uptodown then "true" else "false" end' <<< "$target_json")
 
-	community_patch "gg-photos-arm64-v8a" "akash-sriram"
-}
-
-
-# ==============================================================================
-# Group 3: Sports, Fitness & Navigation
-# ==============================================================================
-
-fotmob() {
-	APP_NAME="fotmob"
-	VARIANT="heval"
-	OMIT_PATCH_VERSION="true"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-	echo "OMIT_PATCH_VERSION=$OMIT_PATCH_VERSION" >> $GITHUB_ENV
-
-	community_dl "Heval-Morphe-Patches" "heval99"
-	get_patches_key "fotmob"
-	get_apk "com.mobilefootie.wc2010" "fotmob-arm64-v8a" "bundle" "universal" "nodpi" "Android 12L+"
-
-	release_exists && return 0
-
-	community_patch "fotmob-arm64-v8a" "heval"
-}
-
-komoot() {
-	APP_NAME="komoot"
-	VARIANT="riky"
-	OMIT_PATCH_VERSION="true"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-	echo "OMIT_PATCH_VERSION=$OMIT_PATCH_VERSION" >> $GITHUB_ENV
-
-	community_dl "morphe-patches" "riky-dev"
-	get_patches_key "komoot"
-	get_apk "de.komoot.android" "komoot-arm64-v8a" "bundle"
-
-	release_exists && return 0
-
-	community_patch "komoot-arm64-v8a" "riky"
-}
-
-# ==============================================================================
-# Group 4: Browsing, Adblocking & Weather
-# ==============================================================================
-
-adguard() {
-	APP_NAME="adguard"
-	VARIANT="ginarena"
-	OMIT_PATCH_VERSION="true"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-	echo "OMIT_PATCH_VERSION=$OMIT_PATCH_VERSION" >> $GITHUB_ENV
-
-	community_dl "GinArena-patch" "ginDoki19"
-	get_patches_key "adguard"
-	get_apk "com.adguard.android" "adguard" "apk"
-
-	release_exists && return 0
-
-	community_patch "adguard" "ginarena"
-}
-
-brave() {
-	APP_NAME="brave"
-	VARIANT="proteus"
-	OMIT_PATCH_VERSION="true"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-	echo "OMIT_PATCH_VERSION=$OMIT_PATCH_VERSION" >> $GITHUB_ENV
-
-	community_dl "Proteus-Patches" "ineednotitle"
-	get_patches_key "brave"
-	get_apk "com.brave.browser" "brave-arm64-v8a" "bundle" "arm64-v8a"
-
-	release_exists && return 0
-
-	community_patch "brave-arm64-v8a" "proteus"
-}
-
-booking() {
-	APP_NAME="booking"
-	VARIANT="jofslash"
-	OMIT_PATCH_VERSION="true"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-	echo "OMIT_PATCH_VERSION=$OMIT_PATCH_VERSION" >> $GITHUB_ENV
-
-	community_dl "morphe-patches" "JoFSlash"
-	get_patches_key "booking"
-	get_apk "com.booking" "booking-arm64-v8a" "bundle"
-
-	release_exists && return 0
-
-	community_patch "booking-arm64-v8a" "jofslash"
-}
-
-windy() {
-	APP_NAME="windy"
-	VARIANT="amfakh"
-	OMIT_PATCH_VERSION="true"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-	echo "OMIT_PATCH_VERSION=$OMIT_PATCH_VERSION" >> $GITHUB_ENV
-
-	community_dl "fakh-patches" "amfakh"
-	get_patches_key "windy"
-	get_apk "com.windyty.android" "windy-arm64-v8a" "bundle" "universal" "120-640dpi" "Android 12L+"
-
-	release_exists && return 0
-
-	community_patch "windy-arm64-v8a" "amfakh"
-}
-
-# ==============================================================================
-# Group 5: Community UI Mod Clients
-# ==============================================================================
-
-reddit-adobo() {
-	APP_NAME="reddit"
-	VARIANT="adobo"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-
-	community_dl "adobo" "jkennethcarino" "prerelease"
-
-	local morphe_mpp="" adobo_mpp=""
-	for f in morphe-universal-*.mpp*; do
-		[ -e "$f" ] && morphe_mpp="$f" && break
-	done
-	for f in patches-*.mpp adobo-*.mpp; do
-		[ -e "$f" ] && adobo_mpp="$f" && break
-	done
-
-	local morphe_ver="" adobo_ver=""
-	[[ -n "$morphe_mpp" ]] && morphe_ver=$(get_patch_version_from_asset_name "$morphe_mpp")
-	[[ -n "$adobo_mpp" ]] && adobo_ver=$(get_patch_version_from_asset_name "$adobo_mpp")
-
-	if [[ -n "$morphe_ver" && -n "$adobo_ver" ]]; then
-		patch_version="m${morphe_ver}-a${adobo_ver}"
-		export patch_version
-		[ -n "$GITHUB_ENV" ] && echo "patch_version=$patch_version" >> "$GITHUB_ENV"
-		green_log "[+] Combined Reddit Patch version: $patch_version (Morphe: $morphe_ver, Adobo: $adobo_ver)"
+	export APP_NAME VARIANT OMIT_PATCH_VERSION
+	if [ -n "$GITHUB_ENV" ]; then
+		echo "APP_NAME=$APP_NAME" >> "$GITHUB_ENV"
+		echo "VARIANT=$VARIANT" >> "$GITHUB_ENV"
+		[[ "$OMIT_PATCH_VERSION" == "true" ]] && echo "OMIT_PATCH_VERSION=true" >> "$GITHUB_ENV"
 	fi
 
-	get_patches_key "reddit-adobo"
-	get_apk "com.reddit.frontpage" "reddit" "bundle_extract"
+	community_dl "$src_name" "$src_owner" "$src_tag"
+	get_patches_key "$patches_dir"
+	_download_target_apk "$pkg" "$apk_name" "$apk_type" "$arch" "$dpi" "$minver" "$fallback_uptodown"
 
 	release_exists && return 0
 
-	# Patch Arm64-v8a:
-	split_editor "reddit" "reddit-arm64-v8a" "exclude" "split_config.armeabi_v7a split_config.x86_64 split_config.mdpi split_config.ldpi split_config.hdpi split_config.xhdpi split_config.xxhdpi split_config.tvdpi"
+	if [[ "$auto_discover" == "true" ]]; then
+		auto_include_community_patches "$pkg" "$patches_dir"
+	fi
+	if [[ "$force_detach" == "true" ]]; then
+		detachPlayStoreUpdates=true
+	fi
+	community_patch "$apk_name" "$VARIANT"
+}
+
+# Reusable multi-source / dual-bundle fusion app builder (e.g. reddit-adobo)
+build_fusion_app() {
+	local target_json="$1"
+
+	APP_NAME=$(jq -r '.app_name' <<< "$target_json")
+	VARIANT=$(jq -r '.variant' <<< "$target_json")
+	OMIT_PATCH_VERSION=$(jq -r 'if .omit_patch_version then "true" else "false" end' <<< "$target_json")
+	local pkg patches_dir auto_discover
+	pkg=$(jq -r '.package' <<< "$target_json")
+	patches_dir=$(jq -r '.patches_dir' <<< "$target_json")
+	auto_discover=$(jq -r 'if .auto_discover then "true" else "false" end' <<< "$target_json")
+
+	local apk_name out_name apk_type arch dpi minver split_exclude fallback_uptodown
+	apk_name=$(jq -r '.apk.name' <<< "$target_json")
+	out_name=$(jq -r '.apk.out_name // .apk.name' <<< "$target_json")
+	apk_type=$(jq -r '.apk.type // "apk"' <<< "$target_json")
+	arch=$(jq -r '.apk.arch // ""' <<< "$target_json")
+	dpi=$(jq -r '.apk.dpi // ""' <<< "$target_json")
+	minver=$(jq -r '.apk.minver // ""' <<< "$target_json")
+	split_exclude=$(jq -r '.apk.split_exclude // ""' <<< "$target_json")
+	fallback_uptodown=$(jq -r 'if .apk.fallback_uptodown then "true" else "false" end' <<< "$target_json")
+
+	export APP_NAME VARIANT OMIT_PATCH_VERSION
+	if [ -n "$GITHUB_ENV" ]; then
+		echo "APP_NAME=$APP_NAME" >> "$GITHUB_ENV"
+		echo "VARIANT=$VARIANT" >> "$GITHUB_ENV"
+		[[ "$OMIT_PATCH_VERSION" == "true" ]] && echo "OMIT_PATCH_VERSION=true" >> "$GITHUB_ENV"
+	fi
+
+	dl_gh "morphe-desktop" "MorpheApp" "$tag" "true"
+
+	local combined_parts=()
+	local src_count idx
+	src_count=$(jq '.sources | length' <<< "$target_json")
+	for (( idx = 0; idx < src_count; idx++ )); do
+		local s_repo s_owner s_name s_tag s_role s_prefix s_ver=""
+		s_repo=$(jq -r ".sources[$idx].repo" <<< "$target_json")
+		s_owner="${s_repo%%/*}"
+		s_name="${s_repo#*/}"
+		s_tag=$(jq -r ".sources[$idx].tag_mode // \"\"" <<< "$target_json")
+		s_role=$(jq -r ".sources[$idx].role // \"community\"" <<< "$target_json")
+		s_prefix=$(jq -r ".sources[$idx].version_prefix // \"\"" <<< "$target_json")
+		[[ "$use_beta" == "true" || -z "$s_tag" ]] && s_tag="$tag"
+
+		if [[ "$s_role" == "morphe" ]]; then
+			morphe_universal_dl "$s_tag"
+			local f
+			for f in morphe-universal-*.mpp*; do
+				[ -e "$f" ] && s_ver=$(get_patch_version_from_asset_name "$f") && break
+			done
+		else
+			patch_version=""
+			dl_gh "$s_name" "$s_owner" "$s_tag"
+			s_ver="$patch_version"
+		fi
+
+		if [[ -n "$s_prefix" && -n "$s_ver" ]]; then
+			combined_parts+=("${s_prefix}${s_ver}")
+		fi
+	done
+
+	if [[ ${#combined_parts[@]} -eq $src_count && $src_count -gt 1 ]]; then
+		local IFS="-"
+		patch_version="${combined_parts[*]}"
+		unset IFS
+		export patch_version
+		[ -n "$GITHUB_ENV" ] && echo "patch_version=$patch_version" >> "$GITHUB_ENV"
+		green_log "[+] Combined fusion patch version: $patch_version"
+	fi
+
+	get_patches_key "$patches_dir"
+	_download_target_apk "$pkg" "$apk_name" "$apk_type" "$arch" "$dpi" "$minver" "$fallback_uptodown"
+
+	release_exists && return 0
+
+	if [[ -n "$split_exclude" ]]; then
+		split_editor "$apk_name" "$out_name" "exclude" "$split_exclude"
+	fi
+
+	# Re-enable Morphe universal bundle for single-pass fusion patching
+	local patches_file
 	for patches_file in morphe-universal-*.mpp.disabled; do
 		[ -e "$patches_file" ] || continue
 		mv "$patches_file" "${patches_file%.disabled}"
 	done
 	separate_morphe_universal_patches=false
-	get_patches_key "reddit-adobo"
-	patch "reddit-arm64-v8a" "adobo" "morphe"
+	get_patches_key "$patches_dir"
+	if [[ "$auto_discover" == "true" ]]; then
+		auto_include_community_patches "$pkg" "$patches_dir"
+	fi
+	patch "$out_name" "$VARIANT" "morphe"
 }
 
-linkedin() {
-	APP_NAME="linkedin"
-	VARIANT="badfella"
-	OMIT_PATCH_VERSION="true"
-	echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-	echo "VARIANT=$VARIANT" >> $GITHUB_ENV
-	echo "OMIT_PATCH_VERSION=$OMIT_PATCH_VERSION" >> $GITHUB_ENV
-
-	community_dl "BadFella-Patches" "XBadFellaX"
-	get_patches_key "linkedin"
-	get_apk "com.linkedin.android" "linkedin-arm64-v8a" "bundle" "arm64-v8a"
-
-	release_exists && return 0
-
-	community_patch "linkedin-arm64-v8a" "badfella"
-}
+# ==============================================================================
+# Custom Builders (Non-Morphe Resource Patching)
+# ==============================================================================
 
 _find_android_build_tool() {
 	local tool="$1"
@@ -432,53 +324,39 @@ niagram() {
 	rm -rf "$dec_dir" "$unaligned_apk" "$aligned_apk"
 	green_log "[+] Built $output_apk"
 }
-niagram-premium-icon() { niagram; }
 
 # ==============================================================================
-# Dispatcher
+# Manifest-Driven Dispatcher
 # ==============================================================================
 
-case "$1" in
-	facebook|facebook-hushfacebook)
-		facebook
-		;;
-	messenger|messenger-hushmessenger)
-		messenger
-		;;
-	instagram|instagram-hushgram)
-		instagram
-		;;
-	tiktok|tiktok-hushfeed)
-		tiktok
-		;;
-	photos|google-photos)
-		photos
-		;;
-	fotmob)
-		fotmob
-		;;
-	komoot)
-		komoot
-		;;
-	adguard)
-		adguard
-		;;
-	brave)
-		brave
-		;;
-	booking|booking-jofslash)
-		booking
-		;;
-	windy)
-		windy
-		;;
-	reddit-adobo|reddit)
-		reddit-adobo
-		;;
-	linkedin|linkedin-badfella|linkedin-michii)
-		linkedin
-		;;
-	niagram|niagram-premium-icon)
-		niagram
-		;;
-esac
+dispatch_target() {
+	local requested="$1"
+	if [[ -z "$requested" ]]; then
+		red_log "[-] No target specified"
+		exit 1
+	fi
+
+	local target_json
+	target_json=$(jq -c --arg req "$requested" '
+		first(.targets[] | select(.org == "Morphe-Community") | select(.id == $req or ((.aliases // []) | index($req)))) // empty
+	' "$TARGETS_MANIFEST")
+
+	if [[ -z "$target_json" ]]; then
+		red_log "[-] Unknown community target: $requested"
+		exit 1
+	fi
+
+	local custom_builder is_fusion
+	custom_builder=$(jq -r '.custom_builder // ""' <<< "$target_json")
+	is_fusion=$(jq -r 'if .fusion then "true" else "false" end' <<< "$target_json")
+
+	if [[ -n "$custom_builder" ]]; then
+		"$custom_builder"
+	elif [[ "$is_fusion" == "true" ]]; then
+		build_fusion_app "$target_json"
+	else
+		build_community_app "$target_json"
+	fi
+}
+
+dispatch_target "$1"

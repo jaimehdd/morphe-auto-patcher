@@ -24,129 +24,12 @@ jobs:
       - name: Check github connection
         id: check-gh
         run: bash src/etc/connection.sh
-      - name: Check new patch Morphe
-        id: check-morphe
+      - name: Check all patch sources (parallel)
+        id: check-all
         if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh MorpheApp/morphe-patches latest "youtube:^youtube-arm64-v8a-morphe\.apk$" "youtube-music:^youtube-music-arm64-v8a-morphe\.apk$" "reddit-adobo:reddit.*adobo.*apk"
-      - name: Check new patch HushGram
-        id: check-hushgram
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh SysAdminDoc/HushGram latest instagram.*hushgram.*apk
-      - name: Check new patch heval
-        id: check-heval
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh heval99/Heval-Morphe-Patches latest "fotmob.*heval.*apk"
-      - name: Check new patch GinArena
-        id: check-ginarena
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh ginDoki19/GinArena-patch latest adguard.*ginarena.*apk
-      - name: Check new patch Amfakh
-        id: check-amfakh
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh amfakh/fakh-patches latest windy.*amfakh.*apk
-      - name: Check new patch Riky
-        id: check-riky
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh riky-dev/morphe-patches latest komoot.*riky.*apk
-      - name: Check new patch Akash-Sriram
-        id: check-akash-sriram
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh Akash-Sriram/morphe-google-photos latest "(google-photos|gg-photos).*akash-sriram.*apk"
-      - name: Check new patch Proteus
-        id: check-proteus
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh ineednotitle/Proteus-Patches latest brave.*proteus.*apk
-      - name: Check new patch JoFSlash
-        id: check-jofslash
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh JoFSlash/morphe-patches latest booking.*jofslash.*apk
-      - name: Check new patch Hushfeed
-        id: check-hushfeed
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh SysAdminDoc/hushfeed latest tiktok.*hushfeed.*apk
-      - name: Check new patch Adobo
-        id: check-adobo
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh jkennethcarino/adobo all "reddit-adobo:reddit.*adobo.*apk"
-      - name: Check new patch HushFacebook
-        id: check-hushfacebook
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh SysAdminDoc/HushFacebook latest facebook.*hushfacebook.*apk
-      - name: Check new patch HushMessenger
-        id: check-hushmessenger
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh SysAdminDoc/HushMessenger latest messenger.*hushmessenger.*apk
-      - name: Check new patch BadFella
-        id: check-badfella
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh XBadFellaX/BadFella-Patches latest linkedin.*badfella.*apk
-      - name: Check new patch Niagram
-        id: check-niagram
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: bash src/etc/ci.sh HSSkyBoy/Niagram latest "niagram:niagram.*premium-icon.*apk"
-      - name: Combine check outputs
-        id: combine-community
-        if: steps.check-gh.outputs.internet_error == '0'
-        run: |
-          targets=()
-          [ "${{ steps.check-hushgram.outputs.new_patch }}" = "1" ] && targets+=("instagram")
-          [ "${{ steps.check-hushfacebook.outputs.new_patch }}" = "1" ] && targets+=("facebook")
-          [ "${{ steps.check-hushmessenger.outputs.new_patch }}" = "1" ] && targets+=("messenger")
-          [ "${{ steps.check-niagram.outputs.new_patch }}" = "1" ] && targets+=("niagram")
-          [ "${{ steps.check-hushfeed.outputs.new_patch }}" = "1" ] && targets+=("tiktok")
-          [ "${{ steps.check-akash-sriram.outputs.new_patch }}" = "1" ] && targets+=("photos")
-          [ "${{ steps.check-badfella.outputs.new_patch }}" = "1" ] && targets+=("linkedin")
-          [ "${{ steps.check-heval.outputs.new_patch }}" = "1" ] && targets+=("fotmob")
-          [ "${{ steps.check-proteus.outputs.new_patch }}" = "1" ] && targets+=("brave")
-          [ "${{ steps.check-jofslash.outputs.new_patch }}" = "1" ] && targets+=("booking")
-          [ "${{ steps.check-adobo.outputs.new_patch }}" = "1" ] && targets+=("reddit-adobo")
-          [ "${{ steps.check-ginarena.outputs.new_patch }}" = "1" ] && targets+=("adguard")
-          [ "${{ steps.check-amfakh.outputs.new_patch }}" = "1" ] && targets+=("windy")
-          [ "${{ steps.check-riky.outputs.new_patch }}" = "1" ] && targets+=("komoot")
-
-          m_targets_clean=()
-          morphe_has_new=0
-          if [ "${{ steps.check-morphe.outputs.new_patch }}" = "1" ]; then
-            read -ra m_targets <<< "${{ steps.check-morphe.outputs.targets }}"
-            if [ ${#m_targets[@]} -gt 0 ]; then
-              for t in "${m_targets[@]}"; do
-                if [ "$t" = "reddit-adobo" ]; then
-                  targets+=("reddit-adobo")
-                else
-                  m_targets_clean+=("$t")
-                fi
-              done
-              if [ ${#m_targets_clean[@]} -gt 0 ]; then
-                morphe_json=$(jq -c -n '$ARGS.positional' --args "${m_targets_clean[@]}")
-                morphe_has_new=1
-              else
-                morphe_json='[]'
-                morphe_has_new=0
-              fi
-            else
-              morphe_json='["youtube","youtube-music"]'
-              morphe_has_new=1
-            fi
-            echo "morphe_targets=$morphe_json" >> $GITHUB_OUTPUT
-            echo "check_morphe=$morphe_has_new" >> $GITHUB_OUTPUT
-          else
-            echo "morphe_targets=[]" >> $GITHUB_OUTPUT
-            echo "check_morphe=0" >> $GITHUB_OUTPUT
-          fi
-
-          if [ ${#targets[@]} -gt 0 ]; then
-            unique_targets=($(printf "%s\n" "${targets[@]}" | sort -u))
-            json=$(jq -c -n '$ARGS.positional' --args "${unique_targets[@]}")
-            echo "targets=$json" >> $GITHUB_OUTPUT
-            echo "new_patch=1" >> $GITHUB_OUTPUT
-            echo "Target apps to build: $json"
-          else
-            echo "targets=[]" >> $GITHUB_OUTPUT
-            echo "new_patch=0" >> $GITHUB_OUTPUT
-            echo "No new patches detected."
-          fi
+        run: python3 src/etc/ci_check.py --manifest src/targets.json --precheck-mpp --stamp-skipped
       - name: Re-run workflow if github connection not stable
-        if: always() && steps.check-morphe.outcome == 'skipped'
+        if: always() && steps.check-all.outcome == 'skipped'
         uses: actions/github-script@v9
         with:
           script: |
@@ -167,26 +50,35 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
-      check_morphe: ${{ steps.combine-community.outputs.check_morphe }}
-      morphe_targets: ${{ steps.combine-community.outputs.morphe_targets }}
-      check_morphe_community: ${{ steps.combine-community.outputs.new_patch }}
-      community_targets: ${{ steps.combine-community.outputs.targets }}
+      check_morphe: ${{ steps.check-all.outputs.check_morphe }}
+      morphe_targets: ${{ steps.check-all.outputs.morphe_targets }}
+      check_morphe_community: ${{ steps.check-all.outputs.check_morphe_community }}
+      community_targets: ${{ steps.check-all.outputs.community_targets }}
+      morphe_desktop_tag: ${{ steps.check-all.outputs.morphe_desktop_tag }}
+      youtube_experimental_support: ${{ steps.check-all.outputs.youtube_experimental_support }}
+      youtube_music_experimental_support: ${{ steps.check-all.outputs.youtube_music_experimental_support }}
+      reddit_experimental_support: ${{ steps.check-all.outputs.reddit_experimental_support }}
 
   Patch-Morphe:
     name: Patch Morphe
     needs: check
-    if: ${{ needs.check.outputs.check_morphe == 1 }}
+    if: ${{ needs.check.outputs.check_morphe == '1' }}
     uses: ./.github/workflows/manual-patch.yml
     secrets: inherit
     with:
       org: "Morphe"
       targets: ${{ needs.check.outputs.morphe_targets }}
+      morphe_desktop_tag: ${{ needs.check.outputs.morphe_desktop_tag }}
+      youtube_experimental_support: ${{ needs.check.outputs.youtube_experimental_support }}
+      youtube_music_experimental_support: ${{ needs.check.outputs.youtube_music_experimental_support }}
+      reddit_experimental_support: ${{ needs.check.outputs.reddit_experimental_support }}
   Patch-Morphe-Community:
     name: Patch Morphe Community
     needs: check
-    if: ${{ needs.check.outputs.check_morphe_community == 1 }}
+    if: ${{ needs.check.outputs.check_morphe_community == '1' }}
     uses: ./.github/workflows/manual-patch.yml
     secrets: inherit
     with:
       org: "Morphe-Community"
       targets: ${{ needs.check.outputs.community_targets }}
+      morphe_desktop_tag: ${{ needs.check.outputs.morphe_desktop_tag }}

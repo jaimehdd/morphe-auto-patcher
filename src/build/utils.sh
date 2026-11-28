@@ -101,6 +101,31 @@ set_patch_version_from_asset_name() {
 	fi
 }
 
+stamp_checked_patch_version() {
+	local repo="$1" release_tag="$2" checked_ver="$3"
+	if [[ -z "$repo" || -z "$release_tag" || -z "$checked_ver" ]]; then
+		return 0
+	fi
+	if ! command -v gh >/dev/null 2>&1 || [[ -z "${GH_TOKEN:-$GITHUB_TOKEN}" ]]; then
+		return 0
+	fi
+	local current_body new_body marker="<!-- checked_patch_version: ${checked_ver} -->"
+	current_body=$(GH_TOKEN="${GH_TOKEN:-$GITHUB_TOKEN}" gh release view "$release_tag" --repo "$repo" --json body --jq '.body // ""' 2>/dev/null) || return 0
+	if [[ "$current_body" == *"$marker"* ]]; then
+		return 0
+	fi
+	if [[ "$current_body" =~ \<!--\ *checked_patch_version:\ *[^[:space:]\>]*\ *--\> ]]; then
+		new_body=$(printf '%s' "$current_body" | sed -E "s/<!-- *checked_patch_version: *[^ >]+ *-->/${marker}/g")
+	elif [[ -n "$current_body" ]]; then
+		new_body="${current_body}"$'\n\n'"${marker}"
+	else
+		new_body="${marker}"
+	fi
+	if GH_TOKEN="${GH_TOKEN:-$GITHUB_TOKEN}" gh release edit "$release_tag" --repo "$repo" --notes "$new_body" >/dev/null 2>&1; then
+		green_log "[+] Stamped checked_patch_version=${checked_ver} on ${release_tag}"
+	fi
+}
+
 _RELEASE_EXISTS_TAG=""
 _RELEASE_EXISTS_RESULT=""
 
@@ -145,6 +170,9 @@ release_exists() {
 
 	if [[ "$apk_asset_count" -gt 0 ]]; then
 		green_log "[+] Release already has APK asset(s), skipping patch: $release_tag"
+		if [[ "${OMIT_PATCH_VERSION:-false}" == "true" && -n "$patch_version" ]]; then
+			stamp_checked_patch_version "$repo" "$release_tag" "$patch_version"
+		fi
 		_RELEASE_EXISTS_TAG="$release_tag"
 		_RELEASE_EXISTS_RESULT=0
 		return 0
@@ -203,12 +231,16 @@ dl_gh() {
       if [[ "$tag_mode" == "latest" && "$names" == *dev* ]]; then
         continue
       fi
-      green_log "[+] Downloading $names from $owner"
       set_patch_version_from_asset_name "$names" "$skip_version"
-      if command -v curl >/dev/null 2>&1; then
-        curl -sSL -o "$names" "$url"
+      if [[ -s "$names" ]]; then
+        green_log "[+] Using cached $names"
       else
-        wget -q -O "$names" "$url"
+        green_log "[+] Downloading $names from $owner"
+        if command -v curl >/dev/null 2>&1; then
+          curl -sSL -o "$names" "$url"
+        else
+          wget -q -O "$names" "$url"
+        fi
       fi
       downloaded=1
     fi
@@ -283,10 +315,10 @@ get_patches_key() {
 	if [ -f "$patchDir/exclude-patches" ]; then
 		while IFS= read -r line1 || [[ -n "$line1" ]]; do
 			[[ -z "$line1" ]] && continue
-			if [[ "$line1" =~ ^[[:space:]]*#[[:space:]]*\[?([Mm]orphe|[Uu]niversal) ]]; then
+			if [[ "$line1" =~ ^[[:space:]]*#[[:space:]]*\[?([Mm]orphe|[Uu]niversal)\]?[[:space:]]*$ ]]; then
 				current_section="morphe"
 				continue
-			elif [[ "$line1" =~ ^[[:space:]]*#[[:space:]]*\[?([Aa]dobo|[Cc]ommunity|[Pp]iko|[Rr]ushi|[Bb]inarymend|[Hh]oo-dles|[Hh]ooman|[Dd]h6k|[Kk]veld9|[Tt]ik[Tt]ok|[Aa]ndrew|[Pp]rathxm|[Hh]ushfeed|[Hh]ush[Ff]acebook|[Hh]ush[Gg]ram|[Hh]ush[Mm]essenger|[Aa]kash-[Ss]riram|[Hh]xreborn|[Mm]ichii|[Ss]hini|[Hh]eval|[Mm]wbra130|[Bb]adfella|[Aa]mfakh|[Rr]iky|[Pp]atcheddit) ]]; then
+			elif [[ "$line1" =~ ^[[:space:]]*#[[:space:]]*\[?[A-Za-z0-9_.-]+\]?[[:space:]]*$ ]]; then
 				current_section="community"
 				continue
 			elif [[ "$line1" =~ ^[[:space:]]*# ]]; then
@@ -309,10 +341,10 @@ get_patches_key() {
 	if [ -f "$patchDir/include-patches" ]; then
 		while IFS= read -r line2 || [[ -n "$line2" ]]; do
 			[[ -z "$line2" ]] && continue
-			if [[ "$line2" =~ ^[[:space:]]*#[[:space:]]*\[?([Mm]orphe|[Uu]niversal) ]]; then
+			if [[ "$line2" =~ ^[[:space:]]*#[[:space:]]*\[?([Mm]orphe|[Uu]niversal)\]?[[:space:]]*$ ]]; then
 				current_section="morphe"
 				continue
-			elif [[ "$line2" =~ ^[[:space:]]*#[[:space:]]*\[?([Aa]dobo|[Cc]ommunity|[Pp]iko|[Rr]ushi|[Bb]inarymend|[Hh]oo-dles|[Hh]ooman|[Dd]h6k|[Kk]veld9|[Tt]ik[Tt]ok|[Aa]ndrew|[Pp]rathxm|[Hh]ushfeed|[Hh]ush[Ff]acebook|[Hh]ush[Gg]ram|[Hh]ush[Mm]essenger|[Aa]kash-[Ss]riram|[Hh]xreborn|[Mm]ichii|[Ss]hini|[Hh]eval|[Mm]wbra130|[Bb]adfella|[Aa]mfakh|[Rr]iky|[Pp]atcheddit) ]]; then
+			elif [[ "$line2" =~ ^[[:space:]]*#[[:space:]]*\[?[A-Za-z0-9_.-]+\]?[[:space:]]*$ ]]; then
 				current_section="community"
 				continue
 			elif [[ "$line2" =~ ^[[:space:]]*# ]]; then
@@ -1360,15 +1392,18 @@ patch() {
 			red_log "[-] morphe-desktop-*.jar not found"
 			exit 1
 		fi
-		local strip_arg=""
+		local strip_arg="" options_arg=""
 		local out_name="$1-$2.apk"
 		if [[ -n "$4" ]]; then
 			strip_arg="--striplibs $4"
 			out_name="$1-$4-$2.apk"
 		fi
+		if [[ -s "./src/options/$2.json" ]]; then
+			options_arg="--options-file ./src/options/$2.json"
+		fi
 		if ! (
 			unset CI GITHUB_ACTION GITHUB_ACTIONS GITHUB_ACTOR GITHUB_ENV GITHUB_EVENT_NAME GITHUB_EVENT_PATH GITHUB_HEAD_REF GITHUB_JOB GITHUB_REF GITHUB_REPOSITORY GITHUB_RUN_ID GITHUB_RUN_NUMBER GITHUB_SHA GITHUB_WORKFLOW GITHUB_WORKSPACE RUN_ID RUN_NUMBER
-			eval java -jar morphe-desktop-*.jar patch $(morphe_patches_args "-p") --options-file ./src/options/$2.json $strip_arg --out=./release/$out_name$excludePatches$includePatches --keystore=./src/morphe.keystore --force --continue-on-error ./download/$1.apk
+			eval java -jar morphe-desktop-*.jar patch $(morphe_patches_args "-p") $options_arg $strip_arg --out=./release/$out_name$excludePatches$includePatches --keystore=./src/morphe.keystore --force --continue-on-error ./download/$1.apk
 		); then
 			red_log "[-] Morphe patching failed for $1"
 			exit 1

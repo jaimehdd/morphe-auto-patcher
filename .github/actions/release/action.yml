@@ -39,75 +39,27 @@ runs:
           echo "* **Patch Version**: \`${patch_version:-unknown}\`"
           echo ""
           echo "### 🔗 Upstream Changelogs & Sources :point_down:"
-          case "${VARIANT}" in
-            morphe)
-              echo "* **Morphe Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              echo "* **Morphe Desktop / Patcher**: [MorpheApp/morphe-desktop](https://github.com/MorpheApp/morphe-desktop/releases)"
-              ;;
-            adobo)
-              echo "* **Adobo Patches**: [jkennethcarino/adobo](https://github.com/jkennethcarino/adobo/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            hushfacebook)
-              echo "* **HushFacebook Patches**: [SysAdminDoc/HushFacebook](https://github.com/SysAdminDoc/HushFacebook/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            hushgram)
-              echo "* **HushGram Patches**: [SysAdminDoc/HushGram](https://github.com/SysAdminDoc/HushGram/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            hushmessenger)
-              echo "* **HushMessenger Patches**: [SysAdminDoc/HushMessenger](https://github.com/SysAdminDoc/HushMessenger/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            akash-sriram)
-              echo "* **Akash Sriram Google Photos Patches**: [Akash-Sriram/morphe-google-photos](https://github.com/Akash-Sriram/morphe-google-photos/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            ginarena)
-              echo "* **GinArena Patches**: [ginDoki19/GinArena-patch](https://github.com/ginDoki19/GinArena-patch/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            heval)
-              echo "* **Heval Patches**: [heval99/Heval-Morphe-Patches](https://github.com/heval99/Heval-Morphe-Patches/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            proteus)
-              echo "* **Proteus Patches**: [ineednotitle/Proteus-Patches](https://github.com/ineednotitle/Proteus-Patches/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            jofslash)
-              echo "* **JoFSlash Patches**: [JoFSlash/morphe-patches](https://github.com/JoFSlash/morphe-patches/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            hushfeed)
-              echo "* **Hushfeed TikTok Patches**: [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            michii)
-              echo "* **Michii Patches**: [heyymichii/michii-patches](https://github.com/heyymichii/michii-patches/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            badfella)
-              echo "* **BadFella Patches**: [XBadFellaX/BadFella-Patches](https://github.com/XBadFellaX/BadFella-Patches/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            amfakh)
-              echo "* **Amfakh Patches**: [amfakh/fakh-patches](https://github.com/amfakh/fakh-patches/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            riky)
-              echo "* **Riky Patches**: [riky-dev/morphe-patches](https://github.com/riky-dev/morphe-patches/releases)"
-              echo "* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-            premium-icon)
-              echo "* **Niagram Upstream**: [HSSkyBoy/Niagram](https://github.com/HSSkyBoy/Niagram/releases)"
-              echo "* **Resource Patching**: [REAndroid/APKEditor](https://github.com/REAndroid/APKEditor/releases) (Telegram Premium Star launcher + notification icons)"
-              ;;
-            *)
-              echo "* **Morphe Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
-              ;;
-          esac
+          if [ -f "src/targets.json" ]; then
+            sources_md=$(jq -r --arg app "${APP_NAME:-}" --arg var "${VARIANT:-}" '
+              first(.targets[] | select(.app_name == $app and .variant == $var)) as $t
+              | if $t then
+                  ($t.sources | map("* **\(.name)**: [\(.repo)](https://github.com/\(.repo)/releases)")),
+                  (if ($t.custom_builder // "") == "niagram" then
+                    ["* **Resource Patching**: [REAndroid/APKEditor](https://github.com/REAndroid/APKEditor/releases) (Telegram Premium Star launcher + notification icons)"]
+                  elif ($t.org == "Morphe") then
+                    ["* **Morphe Desktop / Patcher**: [MorpheApp/morphe-desktop](https://github.com/MorpheApp/morphe-desktop/releases)"]
+                  elif (($t.sources | map(.repo) | index("MorpheApp/morphe-patches")) == null) then
+                    ["* **Morphe Base Engine & Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"]
+                  else [] end)
+                else
+                  ["* **Morphe Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"]
+                end
+              | .[]
+            ' src/targets.json)
+            echo "$sources_md"
+          else
+            echo "* **Morphe Patches**: [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases)"
+          fi
           echo ""
           echo "---"
           echo "<details>"
@@ -115,22 +67,20 @@ runs:
           echo ""
           echo "| Provider | Repository | Focus / Target Apps |"
           echo "| :--- | :--- | :--- |"
-          echo "| **Morphe** | [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches/releases) | YouTube, YouTube Music, Reddit, Base Engine |"
-          echo "| **Adobo** | [jkennethcarino/adobo](https://github.com/jkennethcarino/adobo/releases) | Reddit |"
-          echo "| **HushFacebook** | [SysAdminDoc/HushFacebook](https://github.com/SysAdminDoc/HushFacebook/releases) | Facebook |"
-          echo "| **HushGram** | [SysAdminDoc/HushGram](https://github.com/SysAdminDoc/HushGram/releases) | Instagram |"
-          echo "| **HushMessenger** | [SysAdminDoc/HushMessenger](https://github.com/SysAdminDoc/HushMessenger/releases) | Messenger |"
-          echo "| **Akash Sriram** | [Akash-Sriram/morphe-google-photos](https://github.com/Akash-Sriram/morphe-google-photos/releases) | Google Photos |"
-          echo "| **Proteus** | [ineednotitle/Proteus-Patches](https://github.com/ineednotitle/Proteus-Patches/releases) | Brave Browser |"
-          echo "| **JoFSlash** | [JoFSlash/morphe-patches](https://github.com/JoFSlash/morphe-patches/releases) | Booking.com |"
-          echo "| **Heval** | [heval99/Heval-Morphe-Patches](https://github.com/heval99/Heval-Morphe-Patches/releases) | FotMob |"
-          echo "| **Hushfeed** | [SysAdminDoc/hushfeed](https://github.com/SysAdminDoc/hushfeed/releases) | TikTok |"
-          echo "| **BadFella** | [XBadFellaX/BadFella-Patches](https://github.com/XBadFellaX/BadFella-Patches/releases) | LinkedIn |"
-          echo "| **GinArena** | [ginDoki19/GinArena-patch](https://github.com/ginDoki19/GinArena-patch/releases) | AdGuard |"
-          echo "| **Amfakh** | [amfakh/fakh-patches](https://github.com/amfakh/fakh-patches/releases) | Windy |"
-          echo "| **Riky** | [riky-dev/morphe-patches](https://github.com/riky-dev/morphe-patches/releases) | Komoot |"
-          echo "| **Niagram** | [HSSkyBoy/Niagram](https://github.com/HSSkyBoy/Niagram/releases) | Niagram (Premium Star Branding) |"
-          echo "| **Morphe Desktop** | [MorpheApp/morphe-desktop](https://github.com/MorpheApp/morphe-desktop/releases) | CLI & Patcher Engine |"
+          if [ -f "src/targets.json" ]; then
+            jq -r '
+              [.targets[] as $t | $t.sources[] | {name: .name, repo: .repo, app: $t.app_name}]
+              | group_by(.repo)
+              | map({
+                  name: .[0].name,
+                  repo: .[0].repo,
+                  apps: (map(.app) | unique | join(", "))
+                })
+              | .[]
+              | "| **\(.name)** | [\(.repo)](https://github.com/\(.repo)/releases) | \(.apps) |"
+            ' src/targets.json
+            echo "| **Morphe Desktop** | [MorpheApp/morphe-desktop](https://github.com/MorpheApp/morphe-desktop/releases) | CLI & Patcher Engine |"
+          fi
           echo ""
           echo "</details>"
         } > "${changelog_file}"

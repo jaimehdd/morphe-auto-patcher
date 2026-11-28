@@ -1,0 +1,395 @@
+{
+  "morphe_engine": {
+    "patches_repo": "MorpheApp/morphe-patches",
+    "desktop_repo": "MorpheApp/morphe-desktop"
+  },
+  "targets": [
+    {
+      "id": "youtube",
+      "aliases": ["youtube-morphe"],
+      "org": "Morphe",
+      "app_name": "youtube",
+      "variant": "morphe",
+      "package": "com.google.android.youtube",
+      "patches_dir": "youtube-morphe",
+      "omit_patch_version": false,
+      "asset_regex": "^youtube-arm64-v8a-morphe\\.apk$",
+      "experimental_key": "youtube_experimental_support",
+      "sources": [
+        {
+          "repo": "MorpheApp/morphe-patches",
+          "tag_mode": "latest",
+          "name": "Morphe Patches"
+        }
+      ],
+      "apk": {
+        "name": "youtube",
+        "type": "apk",
+        "strip_libs": "arm64-v8a"
+      }
+    },
+    {
+      "id": "youtube-music",
+      "aliases": ["youtube-music-morphe"],
+      "org": "Morphe",
+      "app_name": "youtube-music",
+      "variant": "morphe",
+      "package": "com.google.android.apps.youtube.music",
+      "patches_dir": "youtube-music-morphe",
+      "omit_patch_version": false,
+      "asset_regex": "^youtube-music-arm64-v8a-morphe\\.apk$",
+      "experimental_key": "youtube_music_experimental_support",
+      "sources": [
+        {
+          "repo": "MorpheApp/morphe-patches",
+          "tag_mode": "latest",
+          "name": "Morphe Patches"
+        }
+      ],
+      "apk": {
+        "name": "youtube-music-arm64-v8a",
+        "type": "apk",
+        "arch": "arm64-v8a"
+      }
+    },
+    {
+      "id": "reddit-adobo",
+      "aliases": ["reddit"],
+      "org": "Morphe-Community",
+      "app_name": "reddit",
+      "variant": "adobo",
+      "package": "com.reddit.frontpage",
+      "patches_dir": "reddit-adobo",
+      "omit_patch_version": false,
+      "fusion": true,
+      "asset_regex": "reddit.*adobo.*apk",
+      "sources": [
+        {
+          "repo": "MorpheApp/morphe-patches",
+          "tag_mode": "latest",
+          "version_prefix": "m",
+          "role": "morphe",
+          "name": "Morphe Base Engine & Patches"
+        },
+        {
+          "repo": "jkennethcarino/adobo",
+          "tag_mode": "prerelease",
+          "ci_tag_mode": "all",
+          "version_prefix": "a",
+          "role": "community",
+          "name": "Adobo Patches"
+        }
+      ],
+      "apk": {
+        "name": "reddit",
+        "out_name": "reddit-arm64-v8a",
+        "type": "bundle_extract",
+        "split_exclude": "split_config.armeabi_v7a split_config.x86_64 split_config.mdpi split_config.ldpi split_config.hdpi split_config.xhdpi split_config.xxhdpi split_config.tvdpi"
+      }
+    },
+    {
+      "id": "facebook",
+      "aliases": ["facebook-hushfacebook"],
+      "org": "Morphe-Community",
+      "app_name": "facebook",
+      "variant": "hushfacebook",
+      "package": "com.facebook.katana",
+      "patches_dir": "facebook",
+      "omit_patch_version": false,
+      "auto_discover": true,
+      "detach_play_store": true,
+      "asset_regex": "facebook.*hushfacebook.*apk",
+      "sources": [
+        {
+          "repo": "SysAdminDoc/HushFacebook",
+          "tag_mode": "latest",
+          "name": "HushFacebook Patches"
+        }
+      ],
+      "apk": {
+        "name": "facebook-arm64-v8a",
+        "type": "bundle",
+        "arch": "arm64-v8a",
+        "dpi": "320-640dpi",
+        "minver": "Android 11+"
+      }
+    },
+    {
+      "id": "messenger",
+      "aliases": ["messenger-hushmessenger"],
+      "org": "Morphe-Community",
+      "app_name": "messenger",
+      "variant": "hushmessenger",
+      "package": "com.facebook.orca",
+      "patches_dir": "messenger",
+      "omit_patch_version": false,
+      "auto_discover": true,
+      "detach_play_store": true,
+      "asset_regex": "messenger.*hushmessenger.*apk",
+      "sources": [
+        {
+          "repo": "SysAdminDoc/HushMessenger",
+          "tag_mode": "latest",
+          "name": "HushMessenger Patches"
+        }
+      ],
+      "apk": {
+        "name": "messenger-arm64-v8a",
+        "type": "apk",
+        "arch": "arm64-v8a",
+        "dpi": "nodpi",
+        "minver": "Android 9.0+"
+      }
+    },
+    {
+      "id": "instagram",
+      "aliases": ["instagram-hushgram"],
+      "org": "Morphe-Community",
+      "app_name": "instagram",
+      "variant": "hushgram",
+      "package": "com.instagram.android",
+      "patches_dir": "instagram",
+      "omit_patch_version": false,
+      "auto_discover": true,
+      "detach_play_store": true,
+      "asset_regex": "instagram.*hushgram.*apk",
+      "sources": [
+        {
+          "repo": "SysAdminDoc/HushGram",
+          "tag_mode": "latest",
+          "name": "HushGram Patches"
+        }
+      ],
+      "apk": {
+        "name": "instagram-arm64-v8a",
+        "type": "bundle",
+        "arch": "arm64-v8a",
+        "dpi": "480-640dpi",
+        "minver": "Android 9.0+"
+      }
+    },
+    {
+      "id": "tiktok",
+      "aliases": ["tiktok-hushfeed"],
+      "org": "Morphe-Community",
+      "app_name": "tiktok",
+      "variant": "hushfeed",
+      "package": "com.zhiliaoapp.musically",
+      "patches_dir": "tiktok",
+      "omit_patch_version": false,
+      "auto_discover": true,
+      "asset_regex": "tiktok.*hushfeed.*apk",
+      "sources": [
+        {
+          "repo": "SysAdminDoc/hushfeed",
+          "tag_mode": "latest",
+          "name": "Hushfeed TikTok Patches"
+        }
+      ],
+      "apk": {
+        "name": "tiktok-arm64-v8a",
+        "type": "apk",
+        "arch": "arm64-v8a",
+        "fallback_uptodown": true
+      }
+    },
+    {
+      "id": "photos",
+      "aliases": ["google-photos"],
+      "org": "Morphe-Community",
+      "app_name": "google-photos",
+      "variant": "akash-sriram",
+      "package": "com.google.android.apps.photos",
+      "patches_dir": "gg-photos",
+      "omit_patch_version": false,
+      "asset_regex": "(google-photos|gg-photos).*akash-sriram.*apk",
+      "sources": [
+        {
+          "repo": "Akash-Sriram/morphe-google-photos",
+          "tag_mode": "latest",
+          "name": "Akash Sriram Google Photos Patches"
+        }
+      ],
+      "apk": {
+        "name": "gg-photos-arm64-v8a",
+        "type": "apk"
+      }
+    },
+    {
+      "id": "fotmob",
+      "org": "Morphe-Community",
+      "app_name": "fotmob",
+      "variant": "heval",
+      "package": "com.mobilefootie.wc2010",
+      "patches_dir": "fotmob",
+      "omit_patch_version": true,
+      "asset_regex": "fotmob.*heval.*apk",
+      "sources": [
+        {
+          "repo": "heval99/Heval-Morphe-Patches",
+          "tag_mode": "latest",
+          "name": "Heval Patches"
+        }
+      ],
+      "apk": {
+        "name": "fotmob-arm64-v8a",
+        "type": "bundle",
+        "arch": "universal",
+        "dpi": "nodpi",
+        "minver": "Android 12L+"
+      }
+    },
+    {
+      "id": "komoot",
+      "org": "Morphe-Community",
+      "app_name": "komoot",
+      "variant": "riky",
+      "package": "de.komoot.android",
+      "patches_dir": "komoot",
+      "omit_patch_version": true,
+      "asset_regex": "komoot.*riky.*apk",
+      "sources": [
+        {
+          "repo": "riky-dev/morphe-patches",
+          "tag_mode": "latest",
+          "name": "Riky Patches"
+        }
+      ],
+      "apk": {
+        "name": "komoot-arm64-v8a",
+        "type": "bundle"
+      }
+    },
+    {
+      "id": "adguard",
+      "org": "Morphe-Community",
+      "app_name": "adguard",
+      "variant": "ginarena",
+      "package": "com.adguard.android",
+      "patches_dir": "adguard",
+      "omit_patch_version": true,
+      "asset_regex": "adguard.*ginarena.*apk",
+      "sources": [
+        {
+          "repo": "ginDoki19/GinArena-patch",
+          "tag_mode": "latest",
+          "name": "GinArena Patches"
+        }
+      ],
+      "apk": {
+        "name": "adguard",
+        "type": "apk"
+      }
+    },
+    {
+      "id": "brave",
+      "org": "Morphe-Community",
+      "app_name": "brave",
+      "variant": "proteus",
+      "package": "com.brave.browser",
+      "patches_dir": "brave",
+      "omit_patch_version": true,
+      "asset_regex": "brave.*proteus.*apk",
+      "sources": [
+        {
+          "repo": "ineednotitle/Proteus-Patches",
+          "tag_mode": "latest",
+          "name": "Proteus Patches"
+        }
+      ],
+      "apk": {
+        "name": "brave-arm64-v8a",
+        "type": "bundle",
+        "arch": "arm64-v8a"
+      }
+    },
+    {
+      "id": "booking",
+      "aliases": ["booking-jofslash"],
+      "org": "Morphe-Community",
+      "app_name": "booking",
+      "variant": "jofslash",
+      "package": "com.booking",
+      "patches_dir": "booking",
+      "omit_patch_version": true,
+      "asset_regex": "booking.*jofslash.*apk",
+      "sources": [
+        {
+          "repo": "JoFSlash/morphe-patches",
+          "tag_mode": "latest",
+          "name": "JoFSlash Patches"
+        }
+      ],
+      "apk": {
+        "name": "booking-arm64-v8a",
+        "type": "bundle"
+      }
+    },
+    {
+      "id": "windy",
+      "org": "Morphe-Community",
+      "app_name": "windy",
+      "variant": "amfakh",
+      "package": "com.windyty.android",
+      "patches_dir": "windy",
+      "omit_patch_version": true,
+      "asset_regex": "windy.*amfakh.*apk",
+      "sources": [
+        {
+          "repo": "amfakh/fakh-patches",
+          "tag_mode": "latest",
+          "name": "Amfakh Patches"
+        }
+      ],
+      "apk": {
+        "name": "windy-arm64-v8a",
+        "type": "bundle",
+        "arch": "universal",
+        "dpi": "120-640dpi",
+        "minver": "Android 12L+"
+      }
+    },
+    {
+      "id": "linkedin",
+      "aliases": ["linkedin-badfella", "linkedin-michii"],
+      "org": "Morphe-Community",
+      "app_name": "linkedin",
+      "variant": "badfella",
+      "package": "com.linkedin.android",
+      "patches_dir": "linkedin",
+      "omit_patch_version": true,
+      "asset_regex": "linkedin.*badfella.*apk",
+      "sources": [
+        {
+          "repo": "XBadFellaX/BadFella-Patches",
+          "tag_mode": "latest",
+          "name": "BadFella Patches"
+        }
+      ],
+      "apk": {
+        "name": "linkedin-arm64-v8a",
+        "type": "bundle",
+        "arch": "arm64-v8a"
+      }
+    },
+    {
+      "id": "niagram",
+      "aliases": ["niagram-premium-icon"],
+      "org": "Morphe-Community",
+      "app_name": "niagram",
+      "variant": "premium-icon",
+      "package": "top.nkbe.niagram",
+      "omit_patch_version": false,
+      "custom_builder": "niagram",
+      "asset_regex": "niagram.*premium-icon.*apk",
+      "sources": [
+        {
+          "repo": "HSSkyBoy/Niagram",
+          "tag_mode": "latest",
+          "asset_regex": "-arm64-v8a\\.apk$",
+          "name": "Niagram Upstream"
+        }
+      ]
+    }
+  ]
+}
